@@ -192,6 +192,7 @@ public class Rivet {
     public static final int ERROR_LOADING_TA       	=  0x00000030; // Error while loading the TA binary
     public static final int ERROR_OPEN_TA           =  0x00000032; // Error opening TA binary
     public static final int ERROR_VERSION_ERROR     =  0x00000050; // Calling TA Version function failed to return result
+    public static final int ERROR_CORRUPT_SP_RCRD =  0x00000051; // The service provider's signature failed verification. 
 
     public static String FormatError(int ERROR) {
         return (ERROR < 0 ? "-" : "")+
