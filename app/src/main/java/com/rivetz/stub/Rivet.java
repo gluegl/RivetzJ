@@ -12,6 +12,12 @@
 
 package com.rivetz.stub;
 
+import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.InputMismatchException;
+import java.util.Map;
+
 public class Rivet {
     /**
      * Intent address. This is the component that is targeted to
@@ -28,9 +34,10 @@ public class Rivet {
      */
     public static final int RIVETJAVA_VERSION_MAJOR = 0;
     public static final int RIVETJAVA_VERSION_MINOR = 0;
-    public static final int RIVETJAVA_VERSION_PATCH = 5;    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00000500;
-    public static final String RIVETJAVA_VERSION		= "0.0.5";
-    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.0.5";
+    public static final int RIVETJAVA_VERSION_PATCH = 6;
+    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00000600;
+    public static final String RIVETJAVA_VERSION		= "0.0.6";
+    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.0.6";
 
     /**
      * Instruction codes
@@ -198,5 +205,99 @@ public class Rivet {
         return (ERROR < 0 ? "-" : "")+
                 "0x"+
                 ("00000000" + Integer.toHexString(ERROR).toUpperCase()).substring(Integer.toHexString(ERROR).length());
+    }
+
+    /**
+     * getErrorText will look up a readable string describing the given error
+     *
+     * @param error The error code to look up
+     * @return readable string
+     */
+    public static String getErrorText(int error) {
+
+        String s = strings.get(error);
+        if (s == null) {
+            s = "Error description not found";
+        }
+        return s;
+    }
+
+    /**
+     * getErrorLabel will return a string corresponding to the given
+     * error code representing its programmatic label. For example, pass
+     * in Rivet.ERROR_NONE and get back "ERROR_NONE";
+     * @param error the error code to look up
+     * @return printable label
+     */
+    public static String getErrorLabel(int error) {
+        String result = "Error label not found";
+        try {
+            for (Field field : Rivet.class.getFields()) {
+                String fieldname = field.getName();
+                if (fieldname.matches("^ERROR_.*")) {
+                    if (field.getInt(null) == error) {
+                        result = fieldname;
+                        break;
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            //
+        }
+        return result;
+    }
+
+    /**
+     * getInstructLabel will return a string corresponding to the given
+     * Instruct code representing its programmatic label. For example, pass
+     * in Rivet.INSTRUCT_GETKEY and get back "INSTRUCT_GETKEY";
+     * @param instruct the error code to look up
+     * @return printable label
+     */
+    public static String getInstructLabel(int instruct) {
+        String result = "Instruct label not found";
+        try {
+            for (Field field : Rivet.class.getFields()) {
+                String fieldname = field.getName();
+                if (fieldname.matches("^INSTRUCT_.*")) {
+                    if (field.getInt(null) == instruct) {
+                        result = fieldname;
+                        break;
+                    }
+                }
+            }
+        } catch (IllegalAccessException e) {
+            //
+        }
+        return result;
+    }
+
+    /**
+     * Static mapping of error coded to string values
+     * Note: this implementation intentionally avoids the String resource file
+     * so as not to introduce any context requirements
+     */
+    private static final Map<Integer,String> strings;
+    static {
+        Map<Integer,String> map = new HashMap<>();
+
+        map.put(ERROR_NONE,"Success");
+        map.put(ERROR_CANCELED,"Request has been cancelled");
+        map.put(ERROR_UNKNOWN,"unknown - generic error result");
+        map.put(ERROR_INVALID_SPID,"Invalid Service Provider ID");
+        map.put(ERROR_INVALID_JSON,"Invalid JSON passed");
+        map.put(ERROR_INVALID_COIN,"Invalid Coin pased");
+        map.put(ERROR_INVALID_INSTRUCT,"Invalid instruction code given");
+        map.put(ERROR_INVALID_KEYTYPE,"Invalid KEYTYPE passed");
+        map.put(ERROR_INVALID_KEYNAME,"Invalid KEYNAME passed");
+        map.put(ERROR_MISSING_PARAMETER,"A required parameter is missing");
+        map.put(ERROR_KEYNAME_EXISTS,"KEYNAME already exists when adding or creating a key");
+        map.put(ERROR_KEYNAME_NOTFOUND,"KEYNAME not found");
+        map.put(ERROR_LOADING_TA,"Error loading the TA binary");
+        map.put(ERROR_OPEN_TA,"Error opening TA binary");
+        map.put(ERROR_VERSION_ERROR,"Calling TA Version function failed to return result");
+        map.put(ERROR_CORRUPT_SP_RCRD,"The serivice provider record signature could not be verified");
+       
+        strings = Collections.unmodifiableMap(map);
     }
 }
