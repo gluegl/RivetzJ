@@ -34,10 +34,10 @@ public class Rivet {
      */
     public static final int RIVETJAVA_VERSION_MAJOR = 0;
     public static final int RIVETJAVA_VERSION_MINOR = 0;
-    public static final int RIVETJAVA_VERSION_PATCH = 6;
-    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00000600;
-    public static final String RIVETJAVA_VERSION		= "0.0.6";
-    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.0.6";
+    public static final int RIVETJAVA_VERSION_PATCH = 7;
+    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00000700;
+    public static final String RIVETJAVA_VERSION		= "0.0.7";
+    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.0.7";
 
     /**
      * Instruction codes
