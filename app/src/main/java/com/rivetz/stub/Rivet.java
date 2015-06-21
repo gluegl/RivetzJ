@@ -12,11 +12,14 @@
 
 package com.rivetz.stub;
 
+import android.content.Context;
+
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.InputMismatchException;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class Rivet {
     /**
@@ -24,6 +27,7 @@ public class Rivet {
      * receive the intent
      */
     public static final String RIVET_INTENT		= "com.rivetz.adapter.BRIDGE";
+    public static final String DEVELOPER_SPID = "029d785242baad9f3d7bedcfca29d5391b3c247a3d4eaf5c3a0a5edd9489d1fcad";
 
     /**
      * Rivet.Java version
@@ -33,11 +37,11 @@ public class Rivet {
      * Major version | Minor version | Patch version
      */
     public static final int RIVETJAVA_VERSION_MAJOR = 0;
-    public static final int RIVETJAVA_VERSION_MINOR = 0;
-    public static final int RIVETJAVA_VERSION_PATCH = 7;
-    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00000700;
-    public static final String RIVETJAVA_VERSION		= "0.0.7";
-    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.0.7";
+    public static final int RIVETJAVA_VERSION_MINOR = 9;
+    public static final int RIVETJAVA_VERSION_PATCH = 0;
+    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00090000;
+    public static final String RIVETJAVA_VERSION		= "0.9.0";
+    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.9.0";
 
     /**
      * Instruction codes
@@ -188,6 +192,7 @@ public class Rivet {
     public static final int ERROR_CANCELED		=  0x00000000; // user cancelled intent or use RESULT_CANCELED
     public static final int ERROR_UNKNOWN		=  0x00000001; // uknown - generic error result
     public static final int ERROR_INVALID_SPID	=  0x00000020; // Invalid Service Provider ID
+    public static final int ERROR_INVALID_SPNAME	=  0x00000021; // Invalid Service Provider Name
     public static final int ERROR_INVALID_JSON	=  0x00000022; // Invalid JSON passed
     public static final int ERROR_INVALID_COIN	=  0x00000024; // Invalid Coin pased
     public static final int ERROR_INVALID_INSTRUCT  =  0x00000025; // Invalid instruction code given
@@ -200,7 +205,62 @@ public class Rivet {
     public static final int ERROR_OPEN_TA           =  0x00000032; // Error opening TA binary
     public static final int ERROR_VERSION_ERROR     =  0x00000050; // Calling TA Version function failed to return result
     public static final int ERROR_CORRUPT_SP_RCRD =  0x00000051; // The serivice provider record signature could not be verified. 
+    public static final int ERROR_ADAPTER_NOT_INIT =  0x00000061; // The rivet adapter is not initialized
 
+    public static int status = ERROR_NONE;
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // API
+    /////////////////////////////////////////////////////////////////////////////////////////
+    public static void init(Context context, String spid) {
+        init(context, spid, new Callable() {
+            @Override
+            public Object call() throws Exception {
+                return null;
+            }
+        });
+    }
+    public static void init(Context context, String spid, Callable done) {
+        Binder.init(context,spid,done);
+    }
+    public static boolean testInitialized() {
+        if (Binder.isInitialized()) {
+            return true;
+        } else {
+            status = ERROR_ADAPTER_NOT_INIT;
+            return false;
+        }
+    }
+    public static KeyRecord createKey(KeyType type) {
+        return(createKey(type, Utilities.generateName()));
+    }
+    public static KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
+        if (!testInitialized()) { return null;}
+
+        int[] rulesList = {rules.length};
+        int i = 0;
+        for (UsageRule rule : rules) {
+            rulesList[i++] = rule.getValue();
+        }
+
+        try {
+            String result = Binder.api.createKey(Binder.spid, type.getValue(), name, rulesList);
+            if (result == null) {
+                Rivet.status = Binder.api.getStatus();
+                return null;
+            }
+            return new KeyRecord(result);
+        } catch(Exception e) {
+            status = ERROR_UNKNOWN;
+            return null;
+        }
+    }
+
+
+    /////////////////////////////////////////////////////////////////////////////////////////
+    // UTILITIES
+    /////////////////////////////////////////////////////////////////////////////////////////
     public static String FormatError(int ERROR) {
         return (ERROR < 0 ? "-" : "")+
                 "0x"+
@@ -285,6 +345,7 @@ public class Rivet {
         map.put(ERROR_CANCELED,"Request has been cancelled");
         map.put(ERROR_UNKNOWN,"unknown - generic error result");
         map.put(ERROR_INVALID_SPID,"Invalid Service Provider ID");
+        map.put(ERROR_INVALID_SPNAME,"Invalid Service Provider Name");
         map.put(ERROR_INVALID_JSON,"Invalid JSON passed");
         map.put(ERROR_INVALID_COIN,"Invalid Coin pased");
         map.put(ERROR_INVALID_INSTRUCT,"Invalid instruction code given");
