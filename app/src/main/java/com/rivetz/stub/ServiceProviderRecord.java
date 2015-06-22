@@ -1,5 +1,7 @@
 package com.rivetz.stub;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
@@ -36,6 +38,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
     public String spid;			        // https://epistery.com/do/view/Main/ServiceProviderID
 	public String name;                 // https://epistery.com/do/view/Main/ServiceProviderName
 	public byte[] logo;			        // https://epistery.com/do/view/Main/ServiceProviderLogo
+    public Bitmap logoBmp;
     public SignatureUsage sigusage = SignatureUsage.TA_WRAPPED_HASH;     //
 	public byte[] signature;	        // https://epistery.com/do/view/Main/SPRecordSignature
                                         // Note, signature includes the signature header bytes
@@ -214,12 +217,21 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 				return false;
 			}
 			name = json.getString("name");
+            String logoString = json.getString("logo");
+            logo = Base64.decode(logoString,Base64.DEFAULT);
 		} catch(JSONException e) {
             Log.e(Constants.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
 			name="";
 		}
 		return true;
 	}
+
+    public Bitmap getLogoBmp() {
+        if (logoBmp == null) {
+            logoBmp = BitmapFactory.decodeByteArray(logo, 0, logo.length);
+        }
+        return logoBmp;
+    }
 
 	public void parseString(String string) {
 		try {
