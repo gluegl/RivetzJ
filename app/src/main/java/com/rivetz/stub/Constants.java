@@ -22,8 +22,6 @@ public class Constants {
     public static final String DEVELOPER_SPID = "029d785242baad9f3d7bedcfca29d5391b3c247a3d4eaf5c3a0a5edd9489d1fcad";
     // the name of the file for writing and reading the TA code
     public static final String TAFILENAME = "ta.bin";
-    // the trusontic service provider id assigned to Intercede
-    public static final String intercedeSpid = "29351328";
 
     public static final int uint8_t = 1;
     public static final int uint16_t = 2;
