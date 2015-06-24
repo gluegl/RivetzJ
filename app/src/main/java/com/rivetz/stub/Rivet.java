@@ -198,25 +198,29 @@ public class Rivet {
     /**
      * ERROR Codes provided as int
      */
-    public static final int ERROR_NONE		= 0xFFFFFFFF; // no error - 4 byte error code or use RESULT_OK
-    public static final int ERROR_CANCELED		=  0x00000000; // user cancelled intent or use RESULT_CANCELED
-    public static final int ERROR_UNKNOWN		=  0x00000001; // uknown - generic error result
-    public static final int ERROR_INVALID_SPID	=  0x00000020; // Invalid Service Provider ID
-    public static final int ERROR_INVALID_SPNAME	=  0x00000021; // Invalid Service Provider Name
-    public static final int ERROR_INVALID_JSON	=  0x00000022; // Invalid JSON passed
-    public static final int ERROR_INVALID_COIN	=  0x00000024; // Invalid Coin pased
-    public static final int ERROR_INVALID_INSTRUCT  =  0x00000025; // Invalid instruction code given
-    public static final int ERROR_INVALID_KEYTYPE	=  0x00000026; // Invalid KEYTYPE passed
-    public static final int ERROR_INVALID_KEYNAME	=  0x00000028; // Invalid KEYNAME passed
-    public static final int ERROR_MISSING_PARAMETER	=  0x00000029; // A required parameter is missing
-    public static final int ERROR_KEYNAME_EXISTS	=  0x0000002A; // KEYNAME already exists when adding or creating a key
-    public static final int ERROR_KEYNAME_NOTFOUND	=  0x0000002C; // KEYNAME not found
-    public static final int ERROR_LOADING_TA       	=  0x00000030; // Error while loading the TA binary
-    public static final int ERROR_OPEN_TA           =  0x00000032; // Error opening TA binary
-    public static final int ERROR_VERSION_ERROR     =  0x00000050; // Calling TA Version function failed to return result
-    public static final int ERROR_CORRUPT_SP_RCRD =  0x00000051; // The serivice provider record signature could not be verified. 
-    public static final int ERROR_ADAPTER_NOT_INIT =  0x00000061; // The rivet adapter is not initialized
+    public static final int ERROR_NONE                  =  0xFFFFFFFF; // no error - 4 byte error code or use RESULT_OK
+    public static final int ERROR_CANCELED              =  0x00000000; // user cancelled intent or use RESULT_CANCELED
+    public static final int ERROR_UNKNOWN               =  0x00000001; // uknown - generic error result
+    public static final int ERROR_INVALID_SPID          =  0x00000020; // Invalid Service Provider ID
+    public static final int ERROR_INVALID_SPNAME        =  0x00000021; // Invalid Service Provider Name
+    public static final int ERROR_INVALID_JSON          =  0x00000022; // Invalid JSON passed
+    public static final int ERROR_INVALID_COIN          =  0x00000024; // Invalid Coin pased
+    public static final int ERROR_INVALID_INSTRUCT      =  0x00000025; // Invalid instruction code given
+    public static final int ERROR_INVALID_KEYTYPE       =  0x00000026; // Invalid KEYTYPE passed
+    public static final int ERROR_INVALID_KEYNAME       =  0x00000028; // Invalid KEYNAME passed
+    public static final int ERROR_MISSING_PARAMETER     =  0x00000029; // A required parameter is missing
+    public static final int ERROR_KEYNAME_EXISTS        =  0x0000002A; // KEYNAME already exists when adding or creating a key
+    public static final int ERROR_KEYNAME_NOTFOUND      =  0x0000002C; // KEYNAME not found
+    public static final int ERROR_LOADING_TA            =  0x00000030; // Error while loading the TA binary
+    public static final int ERROR_OPEN_TA               =  0x00000032; // Error opening TA binary
+    public static final int ERROR_VERSION_ERROR         =  0x00000050; // Calling TA Version function failed to return result
+    public static final int ERROR_CORRUPT_SP_RCRD       =  0x00000051; // The serivice provider record signature could not be verified.
+    public static final int ERROR_ADAPTER_NOT_INIT      =  0x00000061; // The rivet adapter is not initialized
     public static final int ERROR_UNKNOWN_TYPE =    0x00000062;   // Unknown extra or unknown extra data type
+    public static final int ERROR_TCI_INVALID           =  0x00000101; // TA communication structure no properly initialized
+    public static final int ERROR_INVALID_RESPONSE      =  0x00000103; // TA returned an invalid responseID
+    public static final int ERROR_INVALID_CODE          =  0x00000105; // TA returned an invalid returnCode
+    public static final int ERROR_INVALID_INSTRUCTION   =  0x00000107; // Execute received an invalid instruction
 
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -490,6 +494,10 @@ public class Rivet {
         map.put(ERROR_VERSION_ERROR,"Calling TA Version function failed to return result");
         map.put(ERROR_CORRUPT_SP_RCRD,"The serivice provider record signature could not be verified");
         map.put(ERROR_UNKNOWN_TYPE,"Unknown extra or unknown extra data type");
+        map.put(ERROR_TCI_INVALID,"TA communication structure no properly initialized");
+        map.put(ERROR_INVALID_RESPONSE,"TA returned an invalid responseID");
+        map.put(ERROR_INVALID_CODE, "TA returned an invalid returnCode");
+        map.put(ERROR_INVALID_INSTRUCTION,"Execute received an invalid instruction");
 
         strings = Collections.unmodifiableMap(map);
     }
