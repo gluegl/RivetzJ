@@ -19,6 +19,7 @@ import java.util.ArrayList;
  * Records are stored on disk in byte stream format
  */
 public class ServiceProviderManager {
+    public int status; //TODO: normalize error handling for SPM
     // the array list is is used in an a display adapter in MainActivity
     public ArrayList<ServiceProviderRecord> list;
     private static ServiceProviderManager myself;
@@ -41,6 +42,10 @@ public class ServiceProviderManager {
     public void init(Context contextGiven) {
         mContext = contextGiven;
         list = new ArrayList<ServiceProviderRecord>();
+    }
+
+    public ResultCode loadLocal(String spid) {
+        return(loadLocal(new ServiceProviderRecord(spid)));
     }
 
     public ResultCode loadLocal(ServiceProviderRecord record) {

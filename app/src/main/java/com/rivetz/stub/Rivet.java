@@ -15,6 +15,7 @@ package com.rivetz.stub;
 import android.content.Context;
 
 import java.lang.reflect.Field;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -173,6 +174,15 @@ public class Rivet {
         public int getValue() {
             return value;
         }
+
+        public static int[] getListValues(UsageRule[] rules) {
+            int[] rulesList = new int[rules.length];
+            int i = 0;
+            for (UsageRule rule : rules) {
+                rulesList[i++] = rule.getValue();
+            }
+            return rulesList;
+        }
     }
 
     /**
@@ -206,56 +216,177 @@ public class Rivet {
     public static final int ERROR_VERSION_ERROR     =  0x00000050; // Calling TA Version function failed to return result
     public static final int ERROR_CORRUPT_SP_RCRD =  0x00000051; // The serivice provider record signature could not be verified. 
     public static final int ERROR_ADAPTER_NOT_INIT =  0x00000061; // The rivet adapter is not initialized
-
-    public static int status = ERROR_NONE;
+    public static final int ERROR_UNKNOWN_TYPE =    0x00000062;   // Unknown extra or unknown extra data type
 
 
     /////////////////////////////////////////////////////////////////////////////////////////
-    // API
+    // Instance Code
     /////////////////////////////////////////////////////////////////////////////////////////
-    public static void init(Context context, String spid) {
-        init(context, spid, new Callable() {
+    public int status = ERROR_NONE;
+    public ResultData result;
+    protected Binder binder;
+    protected String spid;
+    private Context context;
+
+
+    public Rivet(Context context, String spid) {
+        this(context, spid, new Callable() {
             @Override
             public Object call() throws Exception {
                 return null;
             }
         });
     }
-    public static void init(Context context, String spid, Callable done) {
-        Binder.init(context,spid,done);
+
+    public Rivet(Context contextGiven, String spidGiven, Callable done) {
+        context = contextGiven;
+        spid = spidGiven;
+        binder = new Binder(context, done);
     }
-    public static boolean testInitialized() {
-        if (Binder.isInitialized()) {
+
+    public boolean testInitialized() {
+        if (binder.isInitialized()) {
             return true;
         } else {
             status = ERROR_ADAPTER_NOT_INIT;
             return false;
         }
     }
-    public static KeyRecord createKey(KeyType type) {
-        return(createKey(type, Utilities.generateName()));
-    }
-    public static KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
-        if (!testInitialized()) { return null;}
 
-        int[] rulesList = {rules.length};
-        int i = 0;
-        for (UsageRule rule : rules) {
-            rulesList[i++] = rule.getValue();
-        }
-
-        try {
-            String result = Binder.api.createKey(Binder.spid, type.getValue(), name, rulesList);
-            if (result == null) {
-                Rivet.status = Binder.api.getStatus();
+    public void reconnect() {
+        reconnect(new Callable() {
+            @Override
+            public Object call() throws Exception {
                 return null;
             }
-            return new KeyRecord(result);
+        });
+    }
+    public void reconnect(Callable done) {
+        binder = new Binder(context, done);
+    }
+
+    /**
+     * EXECUTE
+     *
+     * Pass the given instruction as is into the Rivet. This is used
+     * when the instruction needs to carry a signature from SP. When
+     * received by the rivet, the Service Provider Record will be loaded
+     * and attached
+     */
+    public byte[] execute(byte[] instructionRecord) {
+        Instruction instruct = new Instruction(this,instructionRecord);
+        result = instruct.send();
+        status = result.status;
+        return result.payload;
+    }
+
+    /**
+     * CREATEKEY
+     *
+     * Generate a riveted key
+     * @param type one of KeyType
+     * @return a new KeyRecord
+     */
+    public KeyRecord createKey(KeyType type) {
+        return(createKey(type, Utilities.generateName()));
+    }
+    public KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
+        if (!testInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
+        instruct.addParam(Rivet.EXTRA_KEYTYPE,type.getValue());
+        instruct.addParam(Rivet.EXTRA_KEYNAME,name);
+        instruct.addParam(Rivet.EXTRA_USAGERULES,rules);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null || result.spRecord != null) {
+            String keyName = Utilities.extractString(result.payload,0);
+            // todo: signature is only on result data of name
+            return result.spRecord.getKey(keyName);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * ADDKEY
+     *
+     * @param publicData
+     * @param securedData
+     * @param rules
+     * @return
+     */
+    public KeyRecord addKey(String publicData, String securedData, UsageRule...rules) {
+        return(addKey(Utilities.generateName(),publicData,securedData,rules ));
+    }
+    public KeyRecord addKey(String name, String publicData, String securedData, UsageRule...rules) {
+        if (!testInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,name);
+        instruct.addParam(Rivet.EXTRA_PUBLICDATA,name);
+        instruct.addParam(Rivet.EXTRA_SECUREDATA,name);
+        instruct.addParam(Rivet.EXTRA_USAGERULES,rules);
+        instruct.send();
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null || result.spRecord != null) {
+            String keyName = Utilities.extractString(result.payload,0);
+            // todo: signature is only on result data of name
+            return result.spRecord.getKey(keyName);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * GETKEY
+     *
+     * @param name
+     * @return
+     */
+    public KeyRecord getKey(String name) {
+        if (!testInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,name);
+        instruct.send();
+        result = instruct.send();
+        status = result.status;
+        if (result.spRecord != null) {
+            // todo: signature is only on result data of pub key
+            return result.spRecord.getKey(name);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * GETKEYS
+     *
+     * Get a list of the keys established for the current service provider
+     * @param name
+     * @return
+     */
+    public ArrayList<KeyRecord> getKeys(String name) {
+        // todo: this is workaround for now
+        if (!testInitialized()) { return null;}
+        try {
+            byte[] result = binder.api.getServiceProviderRecord(spid);
+            if (result == null) {
+                status = binder.api.getStatus();
+                return null;
+            }
+            ServiceProviderRecord spr = new ServiceProviderRecord(result);
+            return spr.keys;
         } catch(Exception e) {
             status = ERROR_UNKNOWN;
             return null;
         }
     }
+
+    /**
+     *
+     * @param ERROR
+     * @return
+     */
 
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -358,7 +489,8 @@ public class Rivet {
         map.put(ERROR_OPEN_TA,"Error opening TA binary");
         map.put(ERROR_VERSION_ERROR,"Calling TA Version function failed to return result");
         map.put(ERROR_CORRUPT_SP_RCRD,"The serivice provider record signature could not be verified");
-       
+        map.put(ERROR_UNKNOWN_TYPE,"Unknown extra or unknown extra data type");
+
         strings = Collections.unmodifiableMap(map);
     }
 }

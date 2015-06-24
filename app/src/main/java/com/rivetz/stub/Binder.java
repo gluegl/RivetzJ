@@ -14,14 +14,12 @@ import com.rivetz.adapter.IRivetzAPI;
 import java.util.concurrent.Callable;
 
 public class Binder {
-    static ServiceConnection apiConnection;
-    public static IRivetzAPI api;
-    static Context context = null;
-    static String spid = null;
+    private ServiceConnection apiConnection;
+    public IRivetzAPI api;
+    private Context context;
 
-    public static void init(Context contextGiven, String spidGiven, final Callable done) {
+    public Binder(Context contextGiven, final Callable done) {
         context = contextGiven;
-        spid = spidGiven;
         if (api != null) {
             try {
                 done.call();
@@ -57,8 +55,8 @@ public class Binder {
             context.bindService(it, apiConnection, Service.BIND_AUTO_CREATE);
         }
     }
-    public static void close() {
+    public void close() {
         context.unbindService(apiConnection);
     }
-    public static boolean isInitialized() {return api != null;}
+    public boolean isInitialized() {return api != null;}
 }

@@ -23,9 +23,10 @@ public class Constants {
     // the name of the file for writing and reading the TA code
     public static final String TAFILENAME = "ta.bin";
 
-    public static final int uint8_t = 1;
-    public static final int uint16_t = 2;
-    public static final int uint32_t = 4;
-    public static final int uint64_t = 8;
+    // TODO: switch dependence to utilities
+    public static final int uint8_t = Utilities.uint8_t;
+    public static final int uint16_t = Utilities.uint16_t;
+    public static final int uint32_t = Utilities.uint32_t;
+    public static final int uint64_t = Utilities.uint64_t;
 }
 

@@ -5,9 +5,7 @@ package com.rivetz.adapter;
 
 interface IRivetzAPI {
     int getStatus();
-    String createKey(String spid, int keyType, String keyName, in int[] keyRules);
-//    int deleteKey(String spid, String keyName);
-//    int sign(String spid, String keyName, String payload);
-//    int verify(String spid, String keyName, String signature, String payload);
-//    int keyEnum(String spid);
+    boolean pairDevice(String spid);
+    byte[] getServiceProviderRecord(String spid);
+    byte[] execute(String spid, in byte[] instruction);
 }

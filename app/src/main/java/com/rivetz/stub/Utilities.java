@@ -13,6 +13,10 @@ import java.util.UUID;
  * Common utilities for string and number manipulation
  */
 public final class Utilities {
+    public static final int uint8_t = 1;
+    public static final int uint16_t = 2;
+    public static final int uint32_t = 4;
+    public static final int uint64_t = 8;
 
     public static byte[] hexToBytes(String s) {
         int len = s.length();
