@@ -118,9 +118,15 @@ public class Instruction {
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_BOOLEAN+"_).*")) {
             Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint8_t, (Boolean) value ? 1 : 0));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_HEXSTRING +"_).*")) {
-            byte[] valueNew = Utilities.hexToBytes((String)value);
-            byte[] lengthBytes = Utilities.int2bytes(Constants.uint16_t,valueNew.length);
-            Utilities.bytesconcat(paramData,Utilities.bytesconcat(lengthBytes,valueNew));
+            byte[] valueNew = Utilities.hexToBytes((String) value);
+            byte[] lengthBytes = Utilities.int2bytes(Constants.uint16_t, valueNew.length);
+            Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
+            Utilities.bytesconcat(paramData, valueNew);
+        } else if (extraId.matches("^("+Rivet.EXTRATYPE_BYTES +"_).*")) {
+            byte[] valueNew = (byte[])value;
+            byte[] lengthBytes = Utilities.int2bytes(Constants.uint16_t, valueNew.length);
+            Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
+            Utilities.bytesconcat(paramData, valueNew);
         } else {
             resultData.status = Rivet.ERROR_UNKNOWN_TYPE;
         }

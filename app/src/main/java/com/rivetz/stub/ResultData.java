@@ -1,5 +1,9 @@
 package com.rivetz.stub;
 
+/**
+ * A collection of entities available after executing and instruction.
+ * Includes the signature and the complete and signed result record
+ */
 public class ResultData {
     byte[] record;                  // the entire result record
     byte[] payload;                 // the payload of the result response

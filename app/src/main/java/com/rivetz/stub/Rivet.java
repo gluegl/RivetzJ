@@ -13,12 +13,12 @@
 package com.rivetz.stub;
 
 import android.content.Context;
+import android.content.pm.PackageManager;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
@@ -28,6 +28,7 @@ public class Rivet {
      * receive the intent
      */
     public static final String RIVET_INTENT		= "com.rivetz.adapter.BRIDGE";
+    public static final String RIVET_PAIR       = "com.rivetz.adapter.PAIR";
     public static final String DEVELOPER_SPID = "029d785242baad9f3d7bedcfca29d5391b3c247a3d4eaf5c3a0a5edd9489d1fcad";
 
     /**
@@ -109,6 +110,7 @@ public class Rivet {
     public static final String EXTRA_PUBKEY		= EXTRATYPE_STRING+"_EXTRA_PUBKEY";
     public static final String EXTRA_PRVKEY		= EXTRATYPE_STRING+"_EXTRA_PRVKEY";
     public static final String EXTRA_MESSAGE	= EXTRATYPE_STRING+"_EXTRA_MESSAGE";
+    public static final String EXTRA_STRING	= EXTRATYPE_STRING+"_EXTRA_STRING";
     public static final String EXTRA_HEXSTRING	= EXTRATYPE_HEXSTRING+"_EXTRA_HEXSTRING";
     public static final String EXTRA_BLOB		= EXTRATYPE_BYTES+"_EXTRA_BLOB";
     public static final String EXTRA_PAYLOAD	= EXTRATYPE_BYTES+"_EXTRA_PAYLOAD";
@@ -216,11 +218,48 @@ public class Rivet {
     public static final int ERROR_VERSION_ERROR         =  0x00000050; // Calling TA Version function failed to return result
     public static final int ERROR_CORRUPT_SP_RCRD       =  0x00000051; // The serivice provider record signature could not be verified.
     public static final int ERROR_ADAPTER_NOT_INIT      =  0x00000061; // The rivet adapter is not initialized
-    public static final int ERROR_UNKNOWN_TYPE =    0x00000062;   // Unknown extra or unknown extra data type
+    public static final int ERROR_UNKNOWN_TYPE          =  0x00000062;   // Unknown extra or unknown extra data type
+    public static final int ERROR_NOT_INSTALLED         =  0x00000063; // The Rivetz app is not installed
     public static final int ERROR_TCI_INVALID           =  0x00000101; // TA communication structure no properly initialized
     public static final int ERROR_INVALID_RESPONSE      =  0x00000103; // TA returned an invalid responseID
     public static final int ERROR_INVALID_CODE          =  0x00000105; // TA returned an invalid returnCode
     public static final int ERROR_INVALID_INSTRUCTION   =  0x00000107; // Execute received an invalid instruction
+
+    /**
+     * Static mapping of error coded to string values
+     * Note: this implementation intentionally avoids the String resource file
+     * so as not to introduce any context requirements
+     */
+    private static final Map<Integer,String> strings;
+    static {
+        Map<Integer,String> map = new HashMap<>();
+
+        map.put(ERROR_NONE,"Success");
+        map.put(ERROR_CANCELED,"Request has been cancelled");
+        map.put(ERROR_UNKNOWN,"unknown - generic error result");
+        map.put(ERROR_INVALID_SPID,"Invalid Service Provider ID");
+        map.put(ERROR_INVALID_SPNAME,"Invalid Service Provider Name");
+        map.put(ERROR_INVALID_JSON,"Invalid JSON passed");
+        map.put(ERROR_INVALID_COIN,"Invalid Coin pased");
+        map.put(ERROR_INVALID_INSTRUCT,"Invalid instruction code given");
+        map.put(ERROR_INVALID_KEYTYPE,"Invalid KEYTYPE passed");
+        map.put(ERROR_INVALID_KEYNAME,"Invalid KEYNAME passed");
+        map.put(ERROR_MISSING_PARAMETER,"A required parameter is missing");
+        map.put(ERROR_KEYNAME_EXISTS,"KEYNAME already exists when adding or creating a key");
+        map.put(ERROR_KEYNAME_NOTFOUND,"KEYNAME not found");
+        map.put(ERROR_LOADING_TA,"Error loading the TA binary");
+        map.put(ERROR_OPEN_TA,"Error opening TA binary");
+        map.put(ERROR_VERSION_ERROR,"Calling TA Version function failed to return result");
+        map.put(ERROR_CORRUPT_SP_RCRD,"The serivice provider record signature could not be verified");
+        map.put(ERROR_UNKNOWN_TYPE, "Unknown extra or unknown extra data type");
+        map.put(ERROR_TCI_INVALID,"TA communication structure no properly initialized");
+        map.put(ERROR_INVALID_RESPONSE,"TA returned an invalid responseID");
+        map.put(ERROR_INVALID_CODE, "TA returned an invalid returnCode");
+        map.put(ERROR_INVALID_INSTRUCTION,"Execute received an invalid instruction");
+        map.put(ERROR_NOT_INSTALLED,"Rivetz is not installed");
+
+        strings = Collections.unmodifiableMap(map);
+    }
 
 
     /////////////////////////////////////////////////////////////////////////////////////////
@@ -243,12 +282,16 @@ public class Rivet {
     }
 
     public Rivet(Context contextGiven, String spidGiven, Callable done) {
-        context = contextGiven;
-        spid = spidGiven;
-        binder = new Binder(context, done);
+        if (isInstalled(contextGiven)) {
+            context = contextGiven;
+            spid = spidGiven;
+            binder = new Binder(context, done);
+        } else {
+            status = Rivet.ERROR_NOT_INSTALLED;
+        }
     }
 
-    public boolean testInitialized() {
+    public boolean isInitialized() {
         if (binder.isInitialized()) {
             return true;
         } else {
@@ -295,7 +338,7 @@ public class Rivet {
         return(createKey(type, Utilities.generateName()));
     }
     public KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
-        if (!testInitialized()) { return null;}
+        if (!isInitialized()) { return null;}
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
         instruct.addParam(Rivet.EXTRA_KEYTYPE,type.getValue());
         instruct.addParam(Rivet.EXTRA_KEYNAME,name);
@@ -303,9 +346,9 @@ public class Rivet {
         result = instruct.send();
         status = result.status;
         if (result.payload != null || result.spRecord != null) {
-            String keyName = Utilities.extractString(result.payload,0);
+            String retKeyName = Utilities.extractString(result.payload,0);
             // todo: signature is only on result data of name
-            return result.spRecord.getKey(keyName);
+            return result.spRecord.getKey(retKeyName);
         } else {
             return null;
         }
@@ -314,28 +357,28 @@ public class Rivet {
     /**
      * ADDKEY
      *
-     * @param publicData
-     * @param securedData
-     * @param rules
+     * @param publicData public portion of the key in hex format
+     * @param securedData private portion of the key in hex format
+     * @param rules list of UsageRule which may govern this key
      * @return
      */
     public KeyRecord addKey(String publicData, String securedData, UsageRule...rules) {
         return(addKey(Utilities.generateName(),publicData,securedData,rules ));
     }
-    public KeyRecord addKey(String name, String publicData, String securedData, UsageRule...rules) {
-        if (!testInitialized()) { return null;}
+    public KeyRecord addKey(String keyName, String publicData, String securedData, UsageRule...rules) {
+        if (!isInitialized()) { return null;}
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
-        instruct.addParam(Rivet.EXTRA_KEYNAME,name);
-        instruct.addParam(Rivet.EXTRA_PUBLICDATA,name);
-        instruct.addParam(Rivet.EXTRA_SECUREDATA,name);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_PUBLICDATA,publicData);
+        instruct.addParam(Rivet.EXTRA_SECUREDATA,securedData);
         instruct.addParam(Rivet.EXTRA_USAGERULES,rules);
         instruct.send();
         result = instruct.send();
         status = result.status;
         if (result.payload != null || result.spRecord != null) {
-            String keyName = Utilities.extractString(result.payload,0);
+            String retKeyName = Utilities.extractString(result.payload,0);
             // todo: signature is only on result data of name
-            return result.spRecord.getKey(keyName);
+            return result.spRecord.getKey(retKeyName);
         } else {
             return null;
         }
@@ -344,19 +387,19 @@ public class Rivet {
     /**
      * GETKEY
      *
-     * @param name
-     * @return
+     * @param keyName The name assigned to the key
+     * @return a key record or null if none found
      */
-    public KeyRecord getKey(String name) {
-        if (!testInitialized()) { return null;}
+    public KeyRecord getKey(String keyName) {
+        if (!isInitialized()) { return null;}
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
-        instruct.addParam(Rivet.EXTRA_KEYNAME,name);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.send();
         result = instruct.send();
         status = result.status;
         if (result.spRecord != null) {
             // todo: signature is only on result data of pub key
-            return result.spRecord.getKey(name);
+            return result.spRecord.getKey(keyName);
         } else {
             return null;
         }
@@ -366,12 +409,11 @@ public class Rivet {
      * GETKEYS
      *
      * Get a list of the keys established for the current service provider
-     * @param name
-     * @return
+     * @return returns list of key records
      */
-    public ArrayList<KeyRecord> getKeys(String name) {
+    public ArrayList<KeyRecord> getKeys() {
         // todo: this is workaround for now
-        if (!testInitialized()) { return null;}
+        if (!isInitialized()) { return null;}
         try {
             byte[] result = binder.api.getServiceProviderRecord(spid);
             if (result == null) {
@@ -387,19 +429,207 @@ public class Rivet {
     }
 
     /**
+     * SIGNTXN
      *
-     * @param ERROR
+     * Sign a bitcoin transaction
+     *
+     */
+    public String signTxn(String keyName, String coin, String topub, String amount, String fee, String txn) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_SIGNTXN);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_COIN,coin);
+        instruct.addParam(Rivet.EXTRA_TOPUB,topub);
+        instruct.addParam(Rivet.EXTRA_AMT,amount);
+        instruct.addParam(Rivet.EXTRA_FEE,fee);
+        instruct.addParam(Rivet.EXTRA_TRANS,CoinUtils.getTransactionsFromJson(txn));
+        instruct.send();
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            return Utilities.extractString(result.payload,0);
+            // second return parameter is key name and is ignored here
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * SIGN - returns the given blob signed with the named key
+     *
+     * @param keyName
+     * @param payload
      * @return
      */
+    public String sign(String keyName,byte[] payload) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_SIGN);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_PAYLOAD,payload);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            // this is the signature
+            return Utilities.extractString(result.payload,0);
+            // second return parameter is key name and is ignored here
+        } else {
+            return null;
+        }
+    }
+    public String sign(String name, String payload) {
+        return sign(name,payload.getBytes());
+    }
+
+    public Boolean verify(String keyName,String signature) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_VERIFY);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_SIGNATURE,signature);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            // response payload is keyname then verified boolean
+            int offset = 0;
+            String retKeyName = Utilities.extractString(result.payload,offset);
+            offset += keyName.length()+Utilities.uint16_t;
+            return result.payload[offset]!=0;
+        } else {
+            return false;
+        }
+    }
+
+    public String ecdhShared(String keyName,String topub) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_ECDH_SHARED);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_TOPUB,topub);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            int offset = 0;
+            // result is keyname followed by shared key
+            String retKeyName = Utilities.extractString(result.payload,offset);
+            offset+= keyName.length()+Constants.uint16_t;
+            return Utilities.extractString(result.payload,offset);
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * HASH - Perform a hash on the given payload
+     *
+     * @param hashAlgo algorithm to be used
+     * @param payload payload as byte array or string
+     * @return hash string
+     */
+    public String hash(String hashAlgo,byte[] payload) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_HASH);
+        instruct.addParam(Rivet.EXTRA_HASH_ALGO,hashAlgo);
+        instruct.addParam(Rivet.EXTRA_PAYLOAD,payload);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            // this is the hash
+            return Utilities.extractString(result.payload,0);
+        } else {
+            return null;
+        }
+    }
+    public String hash(String hashAlgo, String payload) {
+        return hash(hashAlgo,payload.getBytes());
+    }
+
+    /**
+     * AES Encrypt
+     *
+     * Given a key name to use and payload to work on encrypt or decrypt depending
+     * on the value of reverse
+     * @param keyName name of the key to use
+     * @param payload the data to encrypt/descrypt as a byte array or string
+     * @param reverse if true then descrypt
+     * @return encrypted/decrypted payload
+     */
+    public String AESEncrypt(String keyName, byte[] payload, boolean reverse) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,reverse?Rivet.INSTRUCT_AES_DECRYPT:Rivet.INSTRUCT_AES_ENCRYPT);
+        instruct.addParam(Rivet.EXTRA_STRING,"CBC");
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_PAYLOAD,payload);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            // this is the result data
+            return Utilities.extractString(result.payload,0);
+        } else {
+            return null;
+        }
+    }
+    public String AESEncrypt(String keyName, byte[] payload) {
+        return AESEncrypt(keyName,payload,false);
+    }
+    public String AESEncrypt(String keyName, String payload) {
+        return AESEncrypt(keyName,payload.getBytes(),false);
+    }
+    public String AESDecrypt(String keyName, byte[] payload) {
+        return AESEncrypt(keyName,payload,true);
+    }
+    public String AESDecrypt(String keyName, String payload) {
+        return AESEncrypt(keyName,payload.getBytes(),true);
+    }
+
+    /**
+     * GETADDRESSS
+     *
+     * return the key address formatted for the given coin type
+     *
+     * @param keyName the key to use
+     * @param coin defaults to "BTC"
+     * @return coin address
+     */
+    public String getAddress(String keyName, String coin) {
+        if (!isInitialized()) { return null;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_GETADDRESS);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        instruct.addParam(Rivet.EXTRA_COIN,coin);
+        result = instruct.send();
+        status = result.status;
+        if (result.payload != null) {
+            // this is the address
+            return Utilities.extractString(result.payload,0);
+        } else {
+            return null;
+        }
+    }
+    public String getAddress(String keyName) {
+        return getAddress(keyName,"BTC");
+    }
 
 
     /////////////////////////////////////////////////////////////////////////////////////////
     // UTILITIES
     /////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     *
+     * @param ERROR error code
+     * @return formated error string
+     */
     public static String FormatError(int ERROR) {
         return (ERROR < 0 ? "-" : "")+
                 "0x"+
                 ("00000000" + Integer.toHexString(ERROR).toUpperCase()).substring(Integer.toHexString(ERROR).length());
+    }
+
+    public static boolean isInstalled(Context context) {
+        PackageManager pm = context.getPackageManager();
+        try {
+            pm.getPackageInfo("com.rivetz.adapter", PackageManager.GET_ACTIVITIES);
+            return(true);
+        } catch (PackageManager.NameNotFoundException e) {
+            return(false);
+        }
     }
 
     /**
@@ -465,40 +695,5 @@ public class Rivet {
             //
         }
         return result;
-    }
-
-    /**
-     * Static mapping of error coded to string values
-     * Note: this implementation intentionally avoids the String resource file
-     * so as not to introduce any context requirements
-     */
-    private static final Map<Integer,String> strings;
-    static {
-        Map<Integer,String> map = new HashMap<>();
-
-        map.put(ERROR_NONE,"Success");
-        map.put(ERROR_CANCELED,"Request has been cancelled");
-        map.put(ERROR_UNKNOWN,"unknown - generic error result");
-        map.put(ERROR_INVALID_SPID,"Invalid Service Provider ID");
-        map.put(ERROR_INVALID_SPNAME,"Invalid Service Provider Name");
-        map.put(ERROR_INVALID_JSON,"Invalid JSON passed");
-        map.put(ERROR_INVALID_COIN,"Invalid Coin pased");
-        map.put(ERROR_INVALID_INSTRUCT,"Invalid instruction code given");
-        map.put(ERROR_INVALID_KEYTYPE,"Invalid KEYTYPE passed");
-        map.put(ERROR_INVALID_KEYNAME,"Invalid KEYNAME passed");
-        map.put(ERROR_MISSING_PARAMETER,"A required parameter is missing");
-        map.put(ERROR_KEYNAME_EXISTS,"KEYNAME already exists when adding or creating a key");
-        map.put(ERROR_KEYNAME_NOTFOUND,"KEYNAME not found");
-        map.put(ERROR_LOADING_TA,"Error loading the TA binary");
-        map.put(ERROR_OPEN_TA,"Error opening TA binary");
-        map.put(ERROR_VERSION_ERROR,"Calling TA Version function failed to return result");
-        map.put(ERROR_CORRUPT_SP_RCRD,"The serivice provider record signature could not be verified");
-        map.put(ERROR_UNKNOWN_TYPE,"Unknown extra or unknown extra data type");
-        map.put(ERROR_TCI_INVALID,"TA communication structure no properly initialized");
-        map.put(ERROR_INVALID_RESPONSE,"TA returned an invalid responseID");
-        map.put(ERROR_INVALID_CODE, "TA returned an invalid returnCode");
-        map.put(ERROR_INVALID_INSTRUCTION,"Execute received an invalid instruction");
-
-        strings = Collections.unmodifiableMap(map);
     }
 }

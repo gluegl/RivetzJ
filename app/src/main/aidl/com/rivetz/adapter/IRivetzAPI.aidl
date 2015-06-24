@@ -5,7 +5,6 @@ package com.rivetz.adapter;
 
 interface IRivetzAPI {
     int getStatus();
-    boolean pairDevice(String spid);
     byte[] getServiceProviderRecord(String spid);
     byte[] execute(String spid, in byte[] instruction);
 }

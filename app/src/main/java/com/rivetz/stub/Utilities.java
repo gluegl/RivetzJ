@@ -165,6 +165,7 @@ public final class Utilities {
         offset += Constants.uint16_t;
         return bytes2string(bytesofbytes(bytes,offset,length));
     }
+
     public static String bytes2string(byte[] bytes) {
         try {
             return new String(bytes, "UTF-8");
