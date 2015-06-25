@@ -40,8 +40,12 @@ public class ServiceProviderManager {
         return myself;
     }
     public void init(Context contextGiven) {
-        mContext = contextGiven;
-        list = new ArrayList<ServiceProviderRecord>();
+        if (mContext == null) {
+            mContext = contextGiven;
+        }
+        if (list == null) {
+            list = new ArrayList<ServiceProviderRecord>();
+        }
     }
 
     public ResultCode loadLocal(String spid) {

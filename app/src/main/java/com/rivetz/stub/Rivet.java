@@ -282,9 +282,9 @@ public class Rivet {
     }
 
     public Rivet(Context contextGiven, String spidGiven, Callable done) {
-        if (isInstalled(contextGiven)) {
-            context = contextGiven;
-            spid = spidGiven;
+        context = contextGiven;
+        spid = spidGiven;
+        if (isInstalled(context)) {
             binder = new Binder(context, done);
         } else {
             status = Rivet.ERROR_NOT_INSTALLED;
@@ -382,6 +382,20 @@ public class Rivet {
         } else {
             return null;
         }
+    }
+
+    /**
+     * DELETEKEY
+     *
+     * Remove the named key from the service provider record
+     * @param keyName name of key to delete
+     */
+    public void deleteKey(String keyName) {
+        if (!isInitialized()) { return;}
+        Instruction instruct = new Instruction(this,Rivet.INSTRUCT_DELETEKEY);
+        instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
+        result = instruct.send();
+        status = result.status;
     }
 
     /**
