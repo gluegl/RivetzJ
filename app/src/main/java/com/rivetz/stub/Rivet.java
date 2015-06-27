@@ -224,6 +224,8 @@ public class Rivet {
     public static final int ERROR_INVALID_RESPONSE      =  0x00000103; // TA returned an invalid responseID
     public static final int ERROR_INVALID_CODE          =  0x00000105; // TA returned an invalid returnCode
     public static final int ERROR_INVALID_INSTRUCTION   =  0x00000107; // Execute received an invalid instruction
+    public static final int ERROR_TA_NO_RESPONSE        =  0x00000109; // TA did not return a response
+    public static final int ERROR_TA_BUFFER_OVERFLOW    =  0x0000010A; // TA returned data larger than expected
 
     /**
      * Static mapping of error coded to string values
@@ -257,6 +259,8 @@ public class Rivet {
         map.put(ERROR_INVALID_CODE, "TA returned an invalid returnCode");
         map.put(ERROR_INVALID_INSTRUCTION,"Execute received an invalid instruction");
         map.put(ERROR_NOT_INSTALLED,"Rivetz is not installed");
+        map.put(ERROR_TA_NO_RESPONSE,"TA did not return a response");
+        map.put(ERROR_TA_BUFFER_OVERFLOW,"TA returned data larger than expected");
 
         strings = Collections.unmodifiableMap(map);
     }
