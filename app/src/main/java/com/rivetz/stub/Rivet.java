@@ -22,28 +22,41 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+/**
+ * Instantiate Rivet to send commands to the Rivetz App. Once the binding is accomplished
+ * commands such as createKey and sign can be invoked directly. Rivet
+ * includes the constants definitions that are used for many of these calls
+ * <p>
+ * Initialization requires a Service Provider ID and all subsequent calls to the Rivet
+ * will reference this SPID. The Service Provider ID needs to be paired with the device
+ * in order to be honored. Pairing is a one time event that establishes the Service Provider
+ * credentials to the Rivet.
+ * <p>
+ * Rivetz also supports an Intent based interface where commands can be fired to the
+ * RIVET_INTENT handler using one of the INSTRUCT_xxx codes.
+ */
 public class Rivet {
     /**
-     * Intent address. This is the component that is targeted to
-     * receive the intent
+     * Address of the component that is targeted to receive the intent
      */
     public static final String RIVET_INTENT		= "com.rivetz.adapter.BRIDGE";
+    /**
+     * Address of the component targeted for pairing requests
+     */
     public static final String RIVET_PAIR       = "com.rivetz.adapter.PAIR";
+    /**
+     * Use the Developer SPID to experiment with Rivetz before establishing your own SPID.
+     * Applications built with the developer SPID have distribution limitations and also
+     * won't present your own identity information to the end user.
+     */
     public static final String DEVELOPER_SPID = "029d785242baad9f3d7bedcfca29d5391b3c247a3d4eaf5c3a0a5edd9489d1fcad";
 
     /**
-     * Rivet.Java version
-     *
      * The single version number has the following structure:
      * MMNNPP00
      * Major version | Minor version | Patch version
      */
-    public static final int RIVETJAVA_VERSION_MAJOR = 0;
-    public static final int RIVETJAVA_VERSION_MINOR = 9;
-    public static final int RIVETJAVA_VERSION_PATCH = 0;
-    public static final int    RIVETJAVA_VERSION_NUMBER     = 0x00090000;
-    public static final String RIVETJAVA_VERSION		= "0.9.0";
-    public static final String RIVETJAVA_VERSION_FULL	= "Rivet.java v0.9.0";
+    public static final String RIVETJAVA_VERSION		= "0.9.1";
 
     /**
      * Instruction codes
@@ -76,10 +89,7 @@ public class Rivet {
     public static final int INSTRUCT_AES_ENCRYPT        = 6001; // Encrypted Data using AES (not secure exposed key)
     public static final int INSTRUCT_AES_DECRYPT        = 6002; // Decrypt Data using AES (not secure exposed key)
 
-    /**
-     * Extras provide the parameter data attached to an Intent
-     * sent to Rivetz
-     */
+    // Type data the determines how to interpret parameters passed to an intent as an extra
     public static final String EXTRATYPE_UINT8 = "UINT8";
     public static final String EXTRATYPE_UINT16 = "UINT16";
     public static final String EXTRATYPE_UINT32 = "UINT32";
@@ -126,9 +136,13 @@ public class Rivet {
     public static final String EXTRA_USAGERULE = EXTRATYPE_UINT16+"EXTRA_USAGERULE";
 
     /**
-     * KeyType provided as enum and int for compatibility
+     * KeyType determines the formatting, usage and application of a key
      */
     public enum KeyType {
+        /**
+         * If KeyType is unknown then you will not be able to use the key. It is a valid
+         * option only for raw key records that will be populated later.
+         */
         UNKNOWN(0x0000),
         ECDH_SHARE_DFLT(0x0001),
         ECDH_ENCRYPT_DFLT(0x0002),
@@ -158,15 +172,38 @@ public class Rivet {
      * Key Usage Rules
      */
     public enum UsageRule {
-        SP_IDENTITY_KEY(0x0001),                // Specifies a key as an SP's Identity key. An SP record must have an SP identity
-        // key and there can only be one SP identity key. The identity key must also have
-        // a contain a RIV_TA_SP_KEY_USE_RULE_LIFETIME_PERMANENT Usage Rule.
-        REQUIRE_TUI_CONFIRM(0x0002),            // Specifies the key will not be applied to an operation unless user authorization
-        // has been provided through the TUI.
-        REQUIRE_SIGNED_REQUEST(0x0003),         // Specifies a valid signature must be provided to authorize use of this key.
-        PRIV_KEY_EXPORTABLE(0x0004),            // Specifies the private key can be exported.
-        LIFETIME_PERMANENT(0x0005),             // Specifies the key is permanent and can't be deleted from the record.
-        DEV_IDENTITY_KEY(0x0006);               // Specifies a key as a Device Identity key.
+        /**
+         * Specifies a key as an SP's Identity key. An SP record must have an SP identity
+         * key and there can only be one SP identity key. The identity key must also
+         * contain a LIFETIME_PERMANENT Usage Rule.
+         */
+        SP_IDENTITY_KEY(0x0001),
+        /**
+         * Specifies the key will not be applied to an operation unless user authorization is
+         * with a Trusted User Interface confirmation
+         */
+        REQUIRE_TUI_CONFIRM(0x0002),
+        /**
+         * Specifies a valid signature must be provided to authorize use of this key.
+         */
+        REQUIRE_SIGNED_REQUEST(0x0003),
+        /**
+         * Specifies the private key can be exported. If a key is not exportable it cannot
+         * be backed up or cloned to another device.
+         */
+        PRIV_KEY_EXPORTABLE(0x0004),
+        /**
+         * Specifies the key is permanent and can't be deleted from the service
+         * provider record. To remove the key the entire Service Provider Record
+         * must be deleted from the Rivet
+         */
+        LIFETIME_PERMANENT(0x0005),
+        /**
+         * Indicates that this is a device identity key which, if present, will be
+         * used to sign responses. Each Service Provider will only have a single device
+         * identity key.
+         */
+        DEV_IDENTITY_KEY(0x0006);
 
         private final int value;
         private UsageRule(int value) {
@@ -187,9 +224,7 @@ public class Rivet {
         }
     }
 
-    /**
-     * Hash algorithms
-     */
+    // Hash algorithms
     public static final String HASH_MD2         = "HASH_MD2";
     public static final String HASH_MD5         = "HASH_MD5";
     public static final String HASH_SHA1		= "HASH_SHA1";
@@ -197,9 +232,7 @@ public class Rivet {
     public static final String HASH_DOUBLESHA256= "HASH_DOUBLESHA256";
     public static final String HASH_RIPEMD160	= "HASH_RIPEMD160";
 
-    /**
-     * ERROR Codes provided as int
-     */
+    // ERROR Codes provided as int
     public static final int ERROR_NONE                  =  0xFFFFFFFF; // no error - 4 byte error code or use RESULT_OK
     public static final int ERROR_CANCELED              =  0x00000000; // user cancelled intent or use RESULT_CANCELED
     public static final int ERROR_UNKNOWN               =  0x00000001; // uknown - generic error result
@@ -269,13 +302,26 @@ public class Rivet {
     /////////////////////////////////////////////////////////////////////////////////////////
     // Instance Code
     /////////////////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Rivet.status can be examined to determine the result of the last API call
+     */
     public int status = ERROR_NONE;
+    /**
+     * ResultData contains the results of the last API call
+     */
     public ResultData result;
     protected Binder binder;
     protected String spid;
     private Context context;
 
-
+    /**
+     * Instantiate the Rivet class. The Rivet must be bound to the Rivetz app before
+     * calls to the api will go through. The binding is triggered automatically but
+     * takes place asynchronously. You can pass in a callback or check {@link #isInitialized}
+     * @param context Application context
+     * @param spid Service Provider ID
+     */
     public Rivet(Context context, String spid) {
         this(context, spid, new Callable() {
             @Override
@@ -285,6 +331,14 @@ public class Rivet {
         });
     }
 
+    /**
+     * Instantiate the Rivet class. The Rivet must be bound to the Rivetz app
+     * calls to the api will go through. This will trigger automatically, but
+     * happens asynchronously. You can pass in a callback or check {@link #isInitialized}
+     * @param contextGiven Application context
+     * @param spidGiven Service Provider ID
+     * @param done Callback method for when the Rivet is ready to be called.
+     */
     public Rivet(Context contextGiven, String spidGiven, Callable done) {
         context = contextGiven;
         spid = spidGiven;
@@ -295,6 +349,11 @@ public class Rivet {
         }
     }
 
+    /**
+     * Returns true if the Rivet has been bound to the Rivetz app and is ready to be
+     * invoked.
+     * @return boolean
+     */
     public boolean isInitialized() {
         if (binder.isInitialized()) {
             return true;
@@ -304,6 +363,10 @@ public class Rivet {
         }
     }
 
+    /**
+     * In case the connection to Rivetz is lost, you can call reconnect to re-establish
+     * the connection withouth losing any other state
+     */
     public void reconnect() {
         reconnect(new Callable() {
             @Override
@@ -312,17 +375,26 @@ public class Rivet {
             }
         });
     }
+    /**
+     * In case the connection to Rivetz is lost, you can call reconnect to re-establish
+     * the connection withouth losing any other state
+     * @param done callback method invoked with the binding is complete
+     */
     public void reconnect(Callable done) {
         binder = new Binder(context, done);
     }
 
     /**
-     * EXECUTE
-     *
      * Pass the given instruction as is into the Rivet. This is used
-     * when the instruction needs to carry a signature from SP. When
+     * when the instruction needs to carry a signature from the Service Provider. When
      * received by the rivet, the Service Provider Record will be loaded
-     * and attached
+     * and attached.
+     * <p>
+     * If the Service Provider Record invoked with this instruction contains key identified
+     * with a {@link com.rivetz.stub.Rivet.UsageRule} of SP_IDENTITY_KEY, then the result
+     * will be signed with this device key.
+     * @param instructionRecord binary formatted rivet instruction
+     * @return response record that contains the results of the instruction
      */
     public byte[] execute(byte[] instructionRecord) {
         Instruction instruct = new Instruction(this,instructionRecord);
@@ -332,15 +404,21 @@ public class Rivet {
     }
 
     /**
-     * CREATEKEY
-     *
-     * Generate a riveted key
-     * @param type one of KeyType
-     * @return a new KeyRecord
+     * Generate a riveted key. The key name will be randomly generated and can be
+     * found in {@link ResultData}
+     * @param type indicates the type of the key
+     * @return a new KeyRecord or null if there is an error
      */
     public KeyRecord createKey(KeyType type) {
         return(createKey(type, Utilities.generateName()));
     }
+    /**
+     * Generate a riveted key
+     * @param type indicates the type of the key
+     * @param name provides a name for the key which is used to reference it in future calls.
+     * @param rules Zero or more usage rules that will be added to the riveted key
+     * @return a new KeyRecord or null if there is an error
+     */
     public KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
         if (!isInitialized()) { return null;}
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
@@ -359,16 +437,23 @@ public class Rivet {
     }
 
     /**
-     * ADDKEY
-     *
+     * Insert a key into the Rivet
      * @param publicData public portion of the key in hex format
      * @param securedData private portion of the key in hex format
-     * @param rules list of UsageRule which may govern this key
+     * @param rules Zero or more usage rules that will be added to the riveted key
      * @return
      */
     public KeyRecord addKey(String publicData, String securedData, UsageRule...rules) {
         return(addKey(Utilities.generateName(),publicData,securedData,rules ));
     }
+    /**
+     * Insert a key into the Rivet
+     * @param keyName specifies a name for the key
+     * @param publicData public portion of the key in hex format
+     * @param securedData private portion of the key in hex format
+     * @param rules Zero or more usage rules that will be added to the riveted key
+     * @return
+     */
     public KeyRecord addKey(String keyName, String publicData, String securedData, UsageRule...rules) {
         if (!isInitialized()) { return null;}
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
@@ -389,8 +474,6 @@ public class Rivet {
     }
 
     /**
-     * DELETEKEY
-     *
      * Remove the named key from the service provider record
      * @param keyName name of key to delete
      */
@@ -403,8 +486,11 @@ public class Rivet {
     }
 
     /**
-     * GETKEY
-     *
+     * Fetches the specified key. If there is a device identity key then this
+     * response will be signed and can be fetched from {@link ResultData}
+     * <p>
+     * If a signature is not needed one can simply examine the Keys list in the
+     * ServiceProviderRecord class
      * @param keyName The name assigned to the key
      * @return a key record or null if none found
      */
