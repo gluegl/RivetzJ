@@ -12,7 +12,9 @@
 
 package com.rivetz.stub;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 
 import java.lang.reflect.Field;
@@ -362,6 +364,36 @@ public class Rivet {
             return false;
         }
     }
+    /**
+     * Returns true if the device is paired with this spid
+     */
+    public boolean isPaired() {
+        try {
+            return binder.api.isPaired(spid);
+        } catch(Exception e) {
+            status = Rivet.ERROR_UNKNOWN;
+            return false;
+        }
+    }
+
+    /**
+     * Trigger pairing
+     *
+     * @param activity pointer to a foreground activity
+     */
+    public void pairDevice(Activity activity) {
+        // Pairing establishes the service provider on this device. It creates
+        // the key store that will hold the keys created with this SPID
+        // If the SPID is already paired, the result will be RESULT_OK. If
+        // not the user will be prompted to accept the pairing.
+        Intent intent = new Intent(RIVET_PAIR)
+                .putExtra(Rivet.EXTRA_SPID, spid)
+                .putExtra(Rivet.EXTRA_SILENT, true);
+        if (intent.resolveActivity(activity.getPackageManager()) != null) {
+            activity.startActivityForResult(intent, Rivet.INSTRUCT_PAIRDEVICE);
+        }
+    }
+
 
     /**
      * In case the connection to Rivetz is lost, you can call reconnect to re-establish

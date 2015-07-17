@@ -101,32 +101,32 @@ public class Instruction {
     public void addParam(String extraId, Object value) {
         if (extraId == Rivet.EXTRA_USAGERULES) {
             Rivet.UsageRule[] rules = (Rivet.UsageRule[])value;
-            Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t, rules.length));
+            paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t, rules.length));
             for (Rivet.UsageRule rule : rules) {
-                Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t,rule.getValue()));
+                paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t,rule.getValue()));
             }
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_STRING+"_).*")) {
-            Utilities.bytesconcat(paramData,Utilities.stringToByteStruct((String) value));
+            paramData = Utilities.bytesconcat(paramData,Utilities.stringToByteStruct((String) value));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT8+"_).*")) {
-            Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint8_t,(Integer)value));
+            paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint8_t,(Integer)value));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT16+"_).*")) {
-            Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint16_t,(Integer)value));
+            paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint16_t,(Integer)value));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT32+"_).*")) {
-            Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint32_t,(Integer)value));
+            paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint32_t,(Integer)value));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT64+"_).*")) {
-            Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint64_t,(Integer)value));
+            paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint64_t,(Integer)value));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_BOOLEAN+"_).*")) {
-            Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint8_t, (Boolean) value ? 1 : 0));
+            paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Constants.uint8_t, (Boolean) value ? 1 : 0));
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_HEXSTRING +"_).*")) {
             byte[] valueNew = Utilities.hexToBytes((String) value);
             byte[] lengthBytes = Utilities.int2bytes(Constants.uint16_t, valueNew.length);
-            Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
-            Utilities.bytesconcat(paramData, valueNew);
+            paramData = Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
+            paramData = Utilities.bytesconcat(paramData, valueNew);
         } else if (extraId.matches("^("+Rivet.EXTRATYPE_BYTES +"_).*")) {
             byte[] valueNew = (byte[])value;
             byte[] lengthBytes = Utilities.int2bytes(Constants.uint16_t, valueNew.length);
-            Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
-            Utilities.bytesconcat(paramData, valueNew);
+            paramData = Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
+            paramData = Utilities.bytesconcat(paramData, valueNew);
         } else {
             resultData.status = Rivet.ERROR_UNKNOWN_TYPE;
         }

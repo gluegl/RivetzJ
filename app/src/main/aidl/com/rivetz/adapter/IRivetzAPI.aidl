@@ -7,4 +7,5 @@ interface IRivetzAPI {
     int getStatus();
     byte[] getServiceProviderRecord(String spid);
     byte[] execute(String spid, in byte[] instruction);
+    boolean isPaired(String spid);
 }
