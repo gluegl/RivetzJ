@@ -73,6 +73,8 @@ public class Rivet {
     public static final int INSTRUCT_GETKEY             = 1002; // Get Key
     public static final int INSTRUCT_DELETEKEY          = 1003; // Delete a Key
     public static final int INSTRUCT_KEYENUM            = 1004; // Get Next Key Enumerating through them.
+    public static final int INSTRUCT_GETIDENTITYKEY     = 1005; // Get Device Identity Key
+    public static final int INSTRUCT_GETSPKEY           = 1006; // Get Sevice Provider Key
     // Request Codes: Crypto
     public static final int INSTRUCT_CREATEKEY          = 2001; // Create a ECDSA Key pair to keyname
     public static final int INSTRUCT_SIGN               = 2002; // Create ECDSA Signature from keyname
