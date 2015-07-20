@@ -425,7 +425,7 @@ public class Rivet {
      * and attached.
      * <p>
      * If the Service Provider Record invoked with this instruction contains key identified
-     * with a {@link com.rivetz.stub.Rivet.UsageRule} of SP_IDENTITY_KEY, then the result
+     * with a UsageRule of SP_IDENTITY_KEY, then the result
      * will be signed with this device key.
      * @param instructionRecord binary formatted rivet instruction
      * @return response record that contains the results of the instruction
