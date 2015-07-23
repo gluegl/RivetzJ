@@ -161,6 +161,9 @@ public final class Utilities {
         return bytes2int(bytesofbytes(bytes, offset, type), type);
     }
     public static String extractString(byte[] bytes, int offset) {
+        if (bytes.length < Constants.uint16_t) {
+            return "";
+        }
         int length = bytes2int(bytesofbytes(bytes,offset,Constants.uint16_t),Constants.uint16_t);
         offset += Constants.uint16_t;
         return bytes2string(bytesofbytes(bytes,offset,length));

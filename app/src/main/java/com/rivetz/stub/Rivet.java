@@ -312,9 +312,9 @@ public class Rivet {
      */
     public int status = ERROR_NONE;
     /**
-     * ResultData contains the results of the last API call
+     * contains the parsed results of the last API call
      */
-    public ResultData result;
+    public RivetResponse response;
     protected Binder binder;
     protected String spid;
     private Context context;
@@ -432,14 +432,14 @@ public class Rivet {
      */
     public byte[] execute(byte[] instructionRecord) {
         Instruction instruct = new Instruction(this,instructionRecord);
-        result = instruct.send();
-        status = result.status;
-        return result.payload;
+        response = instruct.send();
+        status = response.status;
+        return response.payload;
     }
 
     /**
      * Generate a riveted key. The key name will be randomly generated and can be
-     * found in {@link ResultData}
+     * found in the RivetResponse
      * @param type indicates the type of the key
      * @return a new KeyRecord or null if there is an error
      */
@@ -459,12 +459,12 @@ public class Rivet {
         instruct.addParam(Rivet.EXTRA_KEYTYPE,type.getValue());
         instruct.addParam(Rivet.EXTRA_KEYNAME,name);
         instruct.addParam(Rivet.EXTRA_USAGERULES,rules);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null || result.spRecord != null) {
-            String retKeyName = Utilities.extractString(result.payload,0);
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null && response.spRecord != null) {
+            String retKeyName = Utilities.extractString(response.payload,0);
             // todo: signature is only on result data of name
-            return result.spRecord.getKey(retKeyName);
+            return response.spRecord.getKey(retKeyName);
         } else {
             return null;
         }
@@ -496,12 +496,12 @@ public class Rivet {
         instruct.addParam(Rivet.EXTRA_SECUREDATA,securedData);
         instruct.addParam(Rivet.EXTRA_USAGERULES,rules);
         instruct.send();
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null || result.spRecord != null) {
-            String retKeyName = Utilities.extractString(result.payload,0);
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null && response.spRecord != null) {
+            String retKeyName = Utilities.extractString(response.payload,0);
             // todo: signature is only on result data of name
-            return result.spRecord.getKey(retKeyName);
+            return response.spRecord.getKey(retKeyName);
         } else {
             return null;
         }
@@ -515,13 +515,13 @@ public class Rivet {
         if (!isInitialized()) { return;}
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_DELETEKEY);
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
-        result = instruct.send();
-        status = result.status;
+        response = instruct.send();
+        status = response.status;
     }
 
     /**
      * Fetches the specified key. If there is a device identity key then this
-     * response will be signed and can be fetched from {@link ResultData}
+     * response will be signed and can be fetched from RivetResponse
      * <p>
      * If a signature is not needed one can simply examine the Keys list in the
      * ServiceProviderRecord class
@@ -533,11 +533,11 @@ public class Rivet {
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_CREATEKEY);
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.send();
-        result = instruct.send();
-        status = result.status;
-        if (result.spRecord != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.spRecord != null) {
             // todo: signature is only on result data of pub key
-            return result.spRecord.getKey(keyName);
+            return response.spRecord.getKey(keyName);
         } else {
             return null;
         }
@@ -582,10 +582,10 @@ public class Rivet {
         instruct.addParam(Rivet.EXTRA_FEE,fee);
         instruct.addParam(Rivet.EXTRA_TRANS,CoinUtils.getTransactionsFromJson(txn));
         instruct.send();
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
-            return Utilities.extractString(result.payload,0);
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
+            return Utilities.extractString(response.payload,0);
             // second return parameter is key name and is ignored here
         } else {
             return null;
@@ -604,11 +604,11 @@ public class Rivet {
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_SIGN);
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.addParam(Rivet.EXTRA_PAYLOAD,payload);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
             // this is the signature
-            return Utilities.extractString(result.payload,0);
+            return Utilities.extractString(response.payload,0);
             // second return parameter is key name and is ignored here
         } else {
             return null;
@@ -623,14 +623,14 @@ public class Rivet {
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_VERIFY);
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.addParam(Rivet.EXTRA_SIGNATURE,signature);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
             // response payload is keyname then verified boolean
             int offset = 0;
-            String retKeyName = Utilities.extractString(result.payload,offset);
+            String retKeyName = Utilities.extractString(response.payload,offset);
             offset += keyName.length()+Utilities.uint16_t;
-            return result.payload[offset]!=0;
+            return response.payload[offset]!=0;
         } else {
             return false;
         }
@@ -641,14 +641,14 @@ public class Rivet {
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_ECDH_SHARED);
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.addParam(Rivet.EXTRA_TOPUB,topub);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
             int offset = 0;
             // result is keyname followed by shared key
-            String retKeyName = Utilities.extractString(result.payload,offset);
+            String retKeyName = Utilities.extractString(response.payload,offset);
             offset+= keyName.length()+Constants.uint16_t;
-            return Utilities.extractString(result.payload,offset);
+            return Utilities.extractString(response.payload,offset);
         } else {
             return null;
         }
@@ -666,11 +666,11 @@ public class Rivet {
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_HASH);
         instruct.addParam(Rivet.EXTRA_HASH_ALGO,hashAlgo);
         instruct.addParam(Rivet.EXTRA_PAYLOAD,payload);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
             // this is the hash
-            return Utilities.extractString(result.payload,0);
+            return Utilities.extractString(response.payload,0);
         } else {
             return null;
         }
@@ -695,11 +695,11 @@ public class Rivet {
         instruct.addParam(Rivet.EXTRA_STRING,"CBC");
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.addParam(Rivet.EXTRA_PAYLOAD,payload);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
             // this is the result data
-            return Utilities.extractString(result.payload,0);
+            return Utilities.extractString(response.payload,0);
         } else {
             return null;
         }
@@ -731,11 +731,11 @@ public class Rivet {
         Instruction instruct = new Instruction(this,Rivet.INSTRUCT_GETADDRESS);
         instruct.addParam(Rivet.EXTRA_KEYNAME,keyName);
         instruct.addParam(Rivet.EXTRA_COIN,coin);
-        result = instruct.send();
-        status = result.status;
-        if (result.payload != null) {
+        response = instruct.send();
+        status = response.status;
+        if (response.payload != null) {
             // this is the address
-            return Utilities.extractString(result.payload,0);
+            return Utilities.extractString(response.payload,0);
         } else {
             return null;
         }
