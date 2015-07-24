@@ -56,7 +56,7 @@ public class Rivet {
     /**
      * The single version number has the following structure:
      * MMNNPP00
-     * Major version | Minor version | Patch version
+     * Major version . Minor version . Patch version
      */
     public static final String RIVETJAVA_VERSION		= "0.9.1";
 
