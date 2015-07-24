@@ -647,7 +647,7 @@ public class Rivet {
             int offset = 0;
             // result is keyname followed by shared key
             String retKeyName = Utilities.extractString(response.payload,offset);
-            offset+= keyName.length()+Constants.uint16_t;
+            offset+= keyName.length()+Utilities.uint16_t;
             return Utilities.extractString(response.payload,offset);
         } else {
             return null;

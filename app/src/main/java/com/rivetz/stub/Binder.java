@@ -18,7 +18,7 @@ public class Binder {
     public IRivetzAPI api;
     private Context context;
 
-    public Binder(Context contextGiven, final Callable done) {
+    protected Binder(Context contextGiven, final Callable done) {
         context = contextGiven;
         if (api != null) {
             try {
@@ -55,8 +55,8 @@ public class Binder {
             context.bindService(it, apiConnection, Service.BIND_AUTO_CREATE);
         }
     }
-    public void close() {
+    protected void close() {
         context.unbindService(apiConnection);
     }
-    public boolean isInitialized() {return api != null;}
+    protected boolean isInitialized() {return api != null;}
 }

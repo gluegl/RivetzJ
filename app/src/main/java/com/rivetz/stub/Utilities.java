@@ -18,6 +18,8 @@ public final class Utilities {
     public static final int uint32_t = 4;
     public static final int uint64_t = 8;
 
+    public static final String LOG_TAG = "RivetAndroid";
+
     public static byte[] hexToBytes(String s) {
         int len = s.length();
         byte[] data = new byte[len / 2];
@@ -107,13 +109,13 @@ public final class Utilities {
         ByteBuffer buffer = ByteBuffer.wrap(bytes);
         buffer.order(ByteOrder.LITTLE_ENDIAN);
         switch (size) {
-            case Constants.uint8_t:
+            case uint8_t:
                 result = buffer.getChar();
                 break;
-            case Constants.uint16_t:
+            case uint16_t:
                 result = buffer.getShort();
                 break;
-            case Constants.uint32_t:
+            case uint32_t:
                 result = buffer.getInt();
                 break;
         }
@@ -122,15 +124,15 @@ public final class Utilities {
 
     public static byte[] int2bytes(int size, int value) {
         // TODO: this null return would break a lot of code
-        //if (size != Constants.uint8_t && size != Constants.uint16_t && size != Constants.uint32_t) return null;
-        byte[] thebytes = ByteBuffer.allocate(Constants.uint32_t).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array();
-        if (size == Constants.uint8_t) {
-            byte[] retVal = new byte[Constants.uint8_t];
+        //if (size != uint8_t && size != uint16_t && size != uint32_t) return null;
+        byte[] thebytes = ByteBuffer.allocate(uint32_t).order(ByteOrder.LITTLE_ENDIAN).putInt(value).array();
+        if (size == uint8_t) {
+            byte[] retVal = new byte[uint8_t];
             retVal[0] = thebytes[0];
             return retVal;
         }
-        if (size == Constants.uint16_t) {
-            byte[] retVal = new byte[Constants.uint16_t];
+        if (size == uint16_t) {
+            byte[] retVal = new byte[uint16_t];
             retVal[0] = thebytes[0];
             retVal[1] = thebytes[1];
             return retVal;
@@ -153,7 +155,7 @@ public final class Utilities {
      * @return
      */
     public static byte[] stringToByteStruct(String s) {
-        byte[] lengthBytes = Utilities.int2bytes(Constants.uint16_t,s.length());
+        byte[] lengthBytes = Utilities.int2bytes(uint16_t,s.length());
         return Utilities.bytesconcat(lengthBytes,s.getBytes());
     }
 
@@ -161,11 +163,11 @@ public final class Utilities {
         return bytes2int(bytesofbytes(bytes, offset, type), type);
     }
     public static String extractString(byte[] bytes, int offset) {
-        if (bytes.length < Constants.uint16_t) {
+        if (bytes.length < uint16_t) {
             return "";
         }
-        int length = bytes2int(bytesofbytes(bytes,offset,Constants.uint16_t),Constants.uint16_t);
-        offset += Constants.uint16_t;
+        int length = bytes2int(bytesofbytes(bytes,offset,uint16_t),uint16_t);
+        offset += uint16_t;
         return bytes2string(bytesofbytes(bytes,offset,length));
     }
 

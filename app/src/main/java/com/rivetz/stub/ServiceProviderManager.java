@@ -71,7 +71,7 @@ public class ServiceProviderManager {
             outputStream.write(record.serialize());
             outputStream.close();
         } catch (Exception e) {
-            Log.e(Constants.LOG_TAG, "Failed to write SP Record to disk");
+            Log.e(Utilities.LOG_TAG, "Failed to write SP Record to disk");
             e.printStackTrace();
         }
         loadAllLocal();
@@ -87,7 +87,7 @@ public class ServiceProviderManager {
         try {
             mContext.deleteFile(filename);
         } catch(Exception e) {
-            Log.e(Constants.LOG_TAG, "Failed to delete "+filename);
+            Log.e(Utilities.LOG_TAG, "Failed to delete "+filename);
             return ResultCode.FAIL;
         }
         loadAllLocal();
@@ -133,7 +133,7 @@ public class ServiceProviderManager {
                 data = baos.toByteArray();
             }
         } catch (Exception e) {
-            Log.w(Constants.LOG_TAG, "Failed to load "+filename);
+            Log.w(Utilities.LOG_TAG, "Failed to load "+filename);
             e.printStackTrace();
         }
         if (data.length == 0) {

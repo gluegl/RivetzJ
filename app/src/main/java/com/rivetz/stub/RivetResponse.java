@@ -26,32 +26,32 @@ public class RivetResponse {
         int offset = 0;
 
         // get version
-        int versionReturned = Utilities.extractInt(record, offset, Constants.uint16_t);
-        offset += Constants.uint16_t;
+        int versionReturned = Utilities.extractInt(record, offset, Utilities.uint16_t);
+        offset += Utilities.uint16_t;
         // get spid
         spid = Utilities.bytes2string(Utilities.bytesofbytes(
                 record, offset, ServiceProviderRecord.SPID_DATA_VALUE_SIZE));
         offset += ServiceProviderRecord.SPID_DATA_VALUE_SIZE;
         // get instruction code
-        instructionCode = Utilities.extractInt(record, offset, Constants.uint16_t);
-        offset += Constants.uint16_t;
+        instructionCode = Utilities.extractInt(record, offset, Utilities.uint16_t);
+        offset += Utilities.uint16_t;
         // get status code
-        int returnStatus = Utilities.extractInt(record, offset, Constants.uint32_t);
-        offset += Constants.uint32_t;
+        int returnStatus = Utilities.extractInt(record, offset, Utilities.uint32_t);
+        offset += Utilities.uint32_t;
         // get data
-        int dataLength = Utilities.extractInt(record, offset, Constants.uint16_t);
-        offset += Constants.uint16_t;
+        int dataLength = Utilities.extractInt(record, offset, Utilities.uint16_t);
+        offset += Utilities.uint16_t;
         payload = Utilities.bytesofbytes(record, offset, dataLength);
         offset += dataLength;
         // get signature
-        int sigLength = Utilities.extractInt(record, offset, Constants.uint16_t);
-        offset += Constants.uint16_t;
+        int sigLength = Utilities.extractInt(record, offset, Utilities.uint16_t);
+        offset += Utilities.uint16_t;
         signature = Utilities.bytesofbytes(record, offset, sigLength);
         offset += sigLength;
         // get SPR
-        int sprLength = Utilities.extractInt(record, offset, Constants.uint32_t);
+        int sprLength = Utilities.extractInt(record, offset, Utilities.uint32_t);
         // extract SPR including initial length value
-        byte[] sprBytes = Utilities.bytesofbytes(record, offset, sprLength+Constants.uint32_t);
+        byte[] sprBytes = Utilities.bytesofbytes(record, offset, sprLength+Utilities.uint32_t);
 
         if (returnStatus == Rivet.ERROR_NONE) {
             spRecord = new ServiceProviderRecord(sprBytes);

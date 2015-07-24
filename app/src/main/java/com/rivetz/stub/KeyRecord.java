@@ -40,7 +40,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
     public KeyRecord(byte[] bytes) {
         if (!Deserialize(bytes)) {
             type = Rivet.KeyType.UNKNOWN;
-            Log.e(Constants.LOG_TAG, "byte[] Parse error of KeyRecord");
+            Log.e(Utilities.LOG_TAG, "byte[] Parse error of KeyRecord");
         }
     }
     public KeyRecord(Rivet.KeyType typeGiven) {
@@ -90,7 +90,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
                 }
             }
         } catch(JSONException e) {
-            Log.e(Constants.LOG_TAG, "JSON Parse error of KeyRecord");
+            Log.e(Utilities.LOG_TAG, "JSON Parse error of KeyRecord");
             name="";
         }
     }
@@ -103,18 +103,18 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
     public byte[] serialize() {
         try {
             // Build byte array values
-            byte[] record_version = Utilities.int2bytes(Constants.uint16_t, record_version_value);
-            byte[] key_type_id = Utilities.int2bytes(Constants.uint16_t, type.getValue());
+            byte[] record_version = Utilities.int2bytes(Utilities.uint16_t, record_version_value);
+            byte[] key_type_id = Utilities.int2bytes(Utilities.uint16_t, type.getValue());
             if (name.length() < RIV_TA_SP_KEY_RCRD_KEY_NAME_MIN_SIZE || name.length() > RIV_TA_SP_KEY_RCRD_KEY_NAME_MAX_SIZE) return null;
-            byte[] length_name_data = Utilities.int2bytes(Constants.uint16_t, name.length());
+            byte[] length_name_data = Utilities.int2bytes(Utilities.uint16_t, name.length());
             byte[] key_name = name.getBytes("UTF-8");
             int publickeylen = 0;
             if (publicKey != null) publickeylen = publicKey.length;
-            byte[] public_key_len_data = Utilities.int2bytes(Constants.uint16_t, publickeylen);
+            byte[] public_key_len_data = Utilities.int2bytes(Utilities.uint16_t, publickeylen);
             int privatekeylen = 0;
             if (privateKey != null) privatekeylen = privateKey.length;
-            byte[] private_key_len_data = Utilities.int2bytes(Constants.uint16_t, privatekeylen);
-            byte[] num_rules = Utilities.int2bytes(Constants.uint16_t, rules.size());
+            byte[] private_key_len_data = Utilities.int2bytes(Utilities.uint16_t, privatekeylen);
+            byte[] num_rules = Utilities.int2bytes(Utilities.uint16_t, rules.size());
             byte[] RulesBytes = new byte[0];
             for (KeyUsageRule rule : rules) {
                 RulesBytes = Utilities.bytesconcat(RulesBytes, rule.Serialize());
@@ -131,10 +131,10 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
                     privatekeylen +
                     num_rules.length +
                     RulesBytes.length;
-            byte[] remaining_rcrd_bytes = Utilities.int2bytes(Constants.uint16_t, remaining_rcrd_bytes_value);
+            byte[] remaining_rcrd_bytes = Utilities.int2bytes(Utilities.uint16_t, remaining_rcrd_bytes_value);
 
             // Build Byte Array List
-            int recordsize = remaining_rcrd_bytes_value + Constants.uint16_t;
+            int recordsize = remaining_rcrd_bytes_value + Utilities.uint16_t;
             byte[] retval = new byte[0];
             retval = Utilities.bytesconcat(retval, remaining_rcrd_bytes);
             retval = Utilities.bytesconcat(retval, record_version);
@@ -154,15 +154,15 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
                 retval = Utilities.bytesconcat(retval, RulesBytes);
             }
             if (recordsize != retval.length) {
-                Log.e(Constants.LOG_TAG, "RecordSize Mismatch KeyRecord");
+                Log.e(Utilities.LOG_TAG, "RecordSize Mismatch KeyRecord");
             }
             return retval;
 
         } catch(UnsupportedEncodingException e ) {
-            Log.e(Constants.LOG_TAG, "Encoding byte write error of KeyRecord");
+            Log.e(Utilities.LOG_TAG, "Encoding byte write error of KeyRecord");
             return null;
         } catch(Exception e ) {
-            Log.e(Constants.LOG_TAG, "general error of KeyRecord");
+            Log.e(Utilities.LOG_TAG, "general error of KeyRecord");
             return null;
         }
     }
@@ -170,29 +170,29 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
     public boolean Deserialize(byte[] bytedata) {
         int Offset = 0;
 
-        byte[] remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int remaining_rcrd_value = Utilities.bytes2int(remaining_rcrd_bytes,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
-        if (remaining_rcrd_value != bytedata.length - Constants.uint16_t) return false;
+        byte[] remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int remaining_rcrd_value = Utilities.bytes2int(remaining_rcrd_bytes,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
+        if (remaining_rcrd_value != bytedata.length - Utilities.uint16_t) return false;
 
-        byte[] record_version = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int new_record_version_value = Utilities.bytes2int(record_version,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Version = " + String.valueOf(new_record_version_value));
+        byte[] record_version = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int new_record_version_value = Utilities.bytes2int(record_version,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Version = " + String.valueOf(new_record_version_value));
         if (new_record_version_value != record_version_value) return false;
 
-        byte[] key_type_id = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        int new_type = Utilities.bytes2int(key_type_id,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Type = " + String.valueOf(new_type));
+        byte[] key_type_id = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        int new_type = Utilities.bytes2int(key_type_id,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Type = " + String.valueOf(new_type));
         if (new_type < 0 || new_type > Rivet.KeyType.values().length) return false;
-        Offset += Constants.uint16_t;
+        Offset += Utilities.uint16_t;
 
-        byte[] length_name_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        int length_name = Utilities.bytes2int(length_name_data,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Name Length = " + String.valueOf(length_name));
+        byte[] length_name_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        int length_name = Utilities.bytes2int(length_name_data,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Name Length = " + String.valueOf(length_name));
         if (length_name < RIV_TA_SP_KEY_RCRD_KEY_NAME_MIN_SIZE || length_name > RIV_TA_SP_KEY_RCRD_KEY_NAME_MAX_SIZE) return false;
-        Offset += Constants.uint16_t;
+        Offset += Utilities.uint16_t;
 
         byte[] new_name_data = Utilities.bytesofbytes(bytedata,Offset,length_name);
         Offset += length_name;
@@ -201,17 +201,17 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
             new_name = new String(new_name_data, "UTF-8");
         }
         catch (UnsupportedEncodingException e) {
-            Log.e(Constants.LOG_TAG, "byte[] Parse error of KeyRecord");
+            Log.e(Utilities.LOG_TAG, "byte[] Parse error of KeyRecord");
             return false;
         }
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Name = " + new_name);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Name = " + new_name);
 
-        byte[] public_key_len_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        int public_key_len = Utilities.bytes2int(public_key_len_data,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Public Key Length = " + String.valueOf(public_key_len));
+        byte[] public_key_len_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        int public_key_len = Utilities.bytes2int(public_key_len_data,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Public Key Length = " + String.valueOf(public_key_len));
         // TODO what is true max size of public key data.   This might not be determined
         // if (public_key_len < 0 || public_key_len > 2048) return false;
-        Offset += Constants.uint16_t;
+        Offset += Utilities.uint16_t;
 
         byte[] new_publicKey = new byte[0];
         if (public_key_len > 0) {
@@ -219,12 +219,12 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
             Offset += public_key_len;
         }
 
-        byte[] private_key_len_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        int private_key_len = Utilities.bytes2int(private_key_len_data,Constants.uint16_t);
+        byte[] private_key_len_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        int private_key_len = Utilities.bytes2int(private_key_len_data,Utilities.uint16_t);
         // TODO what is true max size of private key data.   This might not be determined
         if (private_key_len < 0 || private_key_len > 2048) return false;
-        Offset += Constants.uint16_t;
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Private Key Length = " + String.valueOf(private_key_len));
+        Offset += Utilities.uint16_t;
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Private Key Length = " + String.valueOf(private_key_len));
 
         byte[] new_privateKey = new byte[0];
         if (private_key_len > 0) {
@@ -232,21 +232,21 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
             Offset += private_key_len;
         }
 
-        byte[] num_rules_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        int num_rules = Utilities.bytes2int(num_rules_data,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Number of Rules = " + String.valueOf(num_rules));
-        Offset += Constants.uint16_t;
+        byte[] num_rules_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        int num_rules = Utilities.bytes2int(num_rules_data,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Number of Rules = " + String.valueOf(num_rules));
+        Offset += Utilities.uint16_t;
 
         ArrayList<KeyUsageRule> new_rules = new ArrayList<KeyUsageRule>();
         for (int OnRule = 0; OnRule < num_rules; OnRule++) {
-            byte[] rule_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-            Offset += Constants.uint16_t;
+            byte[] rule_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+            Offset += Utilities.uint16_t;
 
             new_rules.add(new KeyUsageRule(rule_data));
         }
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
-        Log.d(Constants.LOG_TAG, "ParseTest KeyRecord Offset Result = " + String.valueOf(Offset));
-        if (remaining_rcrd_value + Constants.uint16_t != Offset) return false;
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
+        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Offset Result = " + String.valueOf(Offset));
+        if (remaining_rcrd_value + Utilities.uint16_t != Offset) return false;
 
         type = Rivet.KeyType.values()[new_type];
         name = new_name;

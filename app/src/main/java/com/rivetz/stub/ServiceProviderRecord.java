@@ -53,7 +53,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
     public static final int SPID_DATA_VALUE_SIZE            = 33;
     public static final int SP_NAME_DATA_SIZE               = 32;
     public static final int SP_NAME_MIN_DATA_SIZE           = 3;
-    public static final int SIG_USAGE_KEY_SIZE              = Constants.uint16_t;
+    public static final int SIG_USAGE_KEY_SIZE              = Utilities.uint16_t;
 
 	public ServiceProviderRecord () {
 		spid = "";
@@ -73,7 +73,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 
     public ServiceProviderRecord(byte[] bytes) {
         if (!Deserialize(bytes)) {
-            Log.e(Constants.LOG_TAG, "byte[] Parse error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "byte[] Parse error of ServiceProviderRecord");
         }
     }
 
@@ -90,7 +90,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             }
             json.put("keys",jsonKeys);
         } catch(JSONException e) {
-            Log.e(Constants.LOG_TAG, "JSON write error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "JSON write error of ServiceProviderRecord");
             json = null;
 		}
 		return json;
@@ -113,7 +113,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
                 }
             }
 		} catch(JSONException e) {
-            Log.e(Constants.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
             spid="";
 			name="";
 		}
@@ -129,7 +129,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             String logoString = json.getString("logo");
             logo = Base64.decode(logoString,Base64.DEFAULT);
 		} catch(JSONException e) {
-            Log.e(Constants.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
 			name="";
 		}
 		return true;
@@ -146,7 +146,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		try {
 			parseJson(new JSONObject(string));
 		} catch(JSONException e) {
-            Log.e(Constants.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "JSON Parse error of ServiceProviderRecord");
 			spid = "";
 			name = "";
 		}
@@ -155,33 +155,33 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
     public byte[] serialize() {
         try {
             // Build byte array values
-            byte[] record_version = Utilities.int2bytes(Constants.uint16_t, KEY_RCRD_HRD_VERSION_01);
+            byte[] record_version = Utilities.int2bytes(Utilities.uint16_t, KEY_RCRD_HRD_VERSION_01);
             byte[] spid_data = Utilities.hexToBytes(spid);
             if (spid_data.length != SPID_DATA_VALUE_SIZE ) {
-                Log.e(Constants.LOG_TAG, "SPID Length incorrect while creating ServiceProviderRecord");
+                Log.e(Utilities.LOG_TAG, "SPID Length incorrect while creating ServiceProviderRecord");
                 status = Rivet.ERROR_INVALID_SPID;
                 return null;
             }
             if (name.length() < SP_NAME_MIN_DATA_SIZE || name.length() > SP_NAME_DATA_SIZE) {
-                Log.e(Constants.LOG_TAG, "SP Name Length incorrect while creating ServiceProviderRecord");
+                Log.e(Utilities.LOG_TAG, "SP Name Length incorrect while creating ServiceProviderRecord");
                 status = Rivet.ERROR_INVALID_SPNAME;
                 return null;
             }
-            byte[] length_name_data = Utilities.int2bytes(Constants.uint16_t, name.length());
+            byte[] length_name_data = Utilities.int2bytes(Utilities.uint16_t, name.length());
             byte[] sp_name = name.getBytes("UTF-8");
-            byte[] num_key_records = Utilities.int2bytes(Constants.uint32_t, keys.size());
+            byte[] num_key_records = Utilities.int2bytes(Utilities.uint32_t, keys.size());
             byte[] KeysBytes = new byte[0];
             for (KeyRecord key : keys) {
                 KeysBytes = Utilities.bytesconcat(KeysBytes, key.serialize());
             }
             int logolen = logo == null?0:logo.length;
-            byte[] sp_logo_image_type_id = Utilities.int2bytes(Constants.uint16_t, sp_logo_image_type_id_value);
-            byte[] size_sp_logo_png_data = Utilities.int2bytes(Constants.uint32_t, logolen);
-            byte[] sig_usage = Utilities.int2bytes(Constants.uint16_t, sigusage.getValue());
+            byte[] sp_logo_image_type_id = Utilities.int2bytes(Utilities.uint16_t, sp_logo_image_type_id_value);
+            byte[] size_sp_logo_png_data = Utilities.int2bytes(Utilities.uint32_t, logolen);
+            byte[] sig_usage = Utilities.int2bytes(Utilities.uint16_t, sigusage.getValue());
             int siglen = signature == null?0:signature.length;
-            byte[] size_sig_data = Utilities.int2bytes(Constants.uint16_t, siglen);
-            int size_signature_info_value = siglen + Constants.uint16_t + Constants.uint16_t;
-            byte[] size_signature_info = Utilities.int2bytes(Constants.uint16_t, size_signature_info_value);
+            byte[] size_sig_data = Utilities.int2bytes(Utilities.uint16_t, siglen);
+            int size_signature_info_value = siglen + Utilities.uint16_t + Utilities.uint16_t;
+            byte[] size_signature_info = Utilities.int2bytes(Utilities.uint16_t, size_signature_info_value);
             int num_rmng_bytes_in_sp_rcrd_value =
                         record_version.length +
                         size_signature_info.length +
@@ -196,7 +196,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
                         sig_usage.length +
                         size_sig_data.length +
                         siglen;
-            byte[] num_rmng_bytes_in_sp_rcrd = Utilities.int2bytes(Constants.uint32_t, num_rmng_bytes_in_sp_rcrd_value);
+            byte[] num_rmng_bytes_in_sp_rcrd = Utilities.int2bytes(Utilities.uint32_t, num_rmng_bytes_in_sp_rcrd_value);
             byte[] retval = new byte[0];
             retval = Utilities.bytesconcat(retval, num_rmng_bytes_in_sp_rcrd);
             retval = Utilities.bytesconcat(retval, record_version);
@@ -220,39 +220,39 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             }
             return retval;
         } catch(Exception  e) {
-            Log.e(Constants.LOG_TAG, "general error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "general error of ServiceProviderRecord");
             return null;
         }
     }
 
     public boolean Deserialize(byte[] bytedata) {
         int Offset = 0;
-        byte[] remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Constants.uint32_t);
-        Offset += Constants.uint32_t;
-        int remaining_rcrd_value = Utilities.bytes2int(remaining_rcrd_bytes,Constants.uint32_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
-        if (remaining_rcrd_value != bytedata.length - Constants.uint32_t) return false;
+        byte[] remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint32_t);
+        Offset += Utilities.uint32_t;
+        int remaining_rcrd_value = Utilities.bytes2int(remaining_rcrd_bytes,Utilities.uint32_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
+        if (remaining_rcrd_value != bytedata.length - Utilities.uint32_t) return false;
 
-        byte[] record_version = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int new_record_version_value = Utilities.bytes2int(record_version,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record Version = " + String.valueOf(new_record_version_value));
+        byte[] record_version = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int new_record_version_value = Utilities.bytes2int(record_version,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record Version = " + String.valueOf(new_record_version_value));
         if (new_record_version_value != KEY_RCRD_HRD_VERSION_01) return false;
 
-        byte[] size_signature_info = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int size_signature_info_value = Utilities.bytes2int(size_signature_info,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record size_signature_info_value = " + String.valueOf(size_signature_info_value));
+        byte[] size_signature_info = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int size_signature_info_value = Utilities.bytes2int(size_signature_info,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record size_signature_info_value = " + String.valueOf(size_signature_info_value));
 
         byte[] new_spid_data = Utilities.bytesofbytes(bytedata,Offset,SPID_DATA_VALUE_SIZE);
         Offset += SPID_DATA_VALUE_SIZE;
         String new_spid = Utilities.bytesToHex(new_spid_data);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record SPID = " + String.valueOf(new_spid));
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record SPID = " + String.valueOf(new_spid));
 
-        byte[] length_name_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int new_length_name_data = Utilities.bytes2int(length_name_data,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Name Length = " + String.valueOf(new_length_name_data));
+        byte[] length_name_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int new_length_name_data = Utilities.bytes2int(length_name_data,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Name Length = " + String.valueOf(new_length_name_data));
 
         byte[] new_name_data = Utilities.bytesofbytes(bytedata,Offset,new_length_name_data);
         Offset += new_length_name_data;
@@ -262,63 +262,63 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             new_name = new String(new_name_data, "UTF-8");
         }
         catch (UnsupportedEncodingException e) {
-            Log.e(Constants.LOG_TAG, "byte[] Parse error of ServiceProviderRecord");
+            Log.e(Utilities.LOG_TAG, "byte[] Parse error of ServiceProviderRecord");
             return false;
         }
-        Log.d(Constants.LOG_TAG, "ParseTest SP Name = " + new_name);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Name = " + new_name);
 
-        byte[] num_key_records = Utilities.bytesofbytes(bytedata,Offset,Constants.uint32_t);
-        Offset += Constants.uint32_t;
-        int new_num_key_records = Utilities.bytes2int(num_key_records,Constants.uint32_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Number of Keys = " + String.valueOf(new_num_key_records));
+        byte[] num_key_records = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint32_t);
+        Offset += Utilities.uint32_t;
+        int new_num_key_records = Utilities.bytes2int(num_key_records,Utilities.uint32_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Number of Keys = " + String.valueOf(new_num_key_records));
 
         ArrayList<KeyRecord> new_key_records = new ArrayList<KeyRecord>();
         for (int OnKeyRecord = 0; OnKeyRecord < new_num_key_records; OnKeyRecord++) {
-            byte[] new_remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-            int new_remaining_rcrd_value = Utilities.bytes2int(new_remaining_rcrd_bytes,Constants.uint16_t);
-            Log.d(Constants.LOG_TAG, "ParseTest Key Number of Remaining Bytes = " + String.valueOf(new_remaining_rcrd_value));
+            byte[] new_remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+            int new_remaining_rcrd_value = Utilities.bytes2int(new_remaining_rcrd_bytes,Utilities.uint16_t);
+            Log.d(Utilities.LOG_TAG, "ParseTest Key Number of Remaining Bytes = " + String.valueOf(new_remaining_rcrd_value));
 
-            byte[] new_key_data = Utilities.bytesofbytes(bytedata,Offset,new_remaining_rcrd_value + Constants.uint16_t);
-            Offset += new_remaining_rcrd_value + Constants.uint16_t;
+            byte[] new_key_data = Utilities.bytesofbytes(bytedata,Offset,new_remaining_rcrd_value + Utilities.uint16_t);
+            Offset += new_remaining_rcrd_value + Utilities.uint16_t;
 
             new_key_records.add(new KeyRecord(new_key_data));
         }
 
-        byte[] new_sp_logo_image_type_id = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int new_sp_logo_image_type_id_value = Utilities.bytes2int(new_sp_logo_image_type_id,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP logo type = " + String.valueOf(new_sp_logo_image_type_id_value));
+        byte[] new_sp_logo_image_type_id = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int new_sp_logo_image_type_id_value = Utilities.bytes2int(new_sp_logo_image_type_id,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP logo type = " + String.valueOf(new_sp_logo_image_type_id_value));
         if (new_sp_logo_image_type_id_value != sp_logo_image_type_id_value) return false;
 
-        byte[] new_size_sp_logo_png_data = Utilities.bytesofbytes(bytedata,Offset,Constants.uint32_t);
-        Offset += Constants.uint32_t;
-        int new_size_sp_logo_png_value = Utilities.bytes2int(new_size_sp_logo_png_data,Constants.uint32_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP logo length = " + String.valueOf(new_size_sp_logo_png_value));
+        byte[] new_size_sp_logo_png_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint32_t);
+        Offset += Utilities.uint32_t;
+        int new_size_sp_logo_png_value = Utilities.bytes2int(new_size_sp_logo_png_data,Utilities.uint32_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP logo length = " + String.valueOf(new_size_sp_logo_png_value));
 
         byte[] new_logo = Utilities.bytesofbytes(bytedata,Offset,new_size_sp_logo_png_value);
         Offset += new_size_sp_logo_png_value;
 
-        byte[] new_sig_usage = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int new_sig_usage_value = Utilities.bytes2int(new_sig_usage,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record sig_usage = " + String.valueOf(new_sig_usage_value));
+        byte[] new_sig_usage = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int new_sig_usage_value = Utilities.bytes2int(new_sig_usage,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record sig_usage = " + String.valueOf(new_sig_usage_value));
         if (new_sig_usage_value <= 0 || new_sig_usage_value > SignatureUsage.values().length) return false;
 
-        byte[] signature_size = Utilities.bytesofbytes(bytedata,Offset,Constants.uint16_t);
-        Offset += Constants.uint16_t;
-        int signature_size_value = Utilities.bytes2int(signature_size,Constants.uint16_t);
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record signature_size_value = " + String.valueOf(signature_size_value));
-        if (size_signature_info_value != (signature_size_value + Constants.uint16_t + Constants.uint16_t)) return false;
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record signature sizes are all good.");
+        byte[] signature_size = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
+        Offset += Utilities.uint16_t;
+        int signature_size_value = Utilities.bytes2int(signature_size,Utilities.uint16_t);
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record signature_size_value = " + String.valueOf(signature_size_value));
+        if (size_signature_info_value != (signature_size_value + Utilities.uint16_t + Utilities.uint16_t)) return false;
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record signature sizes are all good.");
         if (new_sig_usage_value == SIG_USAGE_KEY_SPIDKEY && signature_size_value != SPIDKEY_SIG_DATA_SIZE) return false;
-        Log.d(Constants.LOG_TAG, "ParseTest SP Record signature type matches size.");
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Record signature type matches size.");
 
         byte[] new_signature = Utilities.bytesofbytes(bytedata,Offset,signature_size_value);
         Offset += signature_size_value;
 
-        Log.d(Constants.LOG_TAG, "ParseTest SP remaining_rcrd = " + String.valueOf(remaining_rcrd_value));
-        Log.d(Constants.LOG_TAG, "ParseTest SP Offset Result = " + String.valueOf(Offset));
-        if (remaining_rcrd_value + Constants.uint32_t != Offset) return false;
+        Log.d(Utilities.LOG_TAG, "ParseTest SP remaining_rcrd = " + String.valueOf(remaining_rcrd_value));
+        Log.d(Utilities.LOG_TAG, "ParseTest SP Offset Result = " + String.valueOf(Offset));
+        if (remaining_rcrd_value + Utilities.uint32_t != Offset) return false;
 
         spid = new_spid;
         name = new_name;
