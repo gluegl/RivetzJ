@@ -11,7 +11,7 @@ import java.text.DecimalFormat;
 /**
  * A collection of functions for handling the details of coin instructions
  */
-public class CoinUtils {
+class CoinUtils {
 
     public static String getTransactionsFromJson(String str) {
         try {

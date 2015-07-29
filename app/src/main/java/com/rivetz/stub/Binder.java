@@ -13,7 +13,7 @@ import com.rivetz.adapter.IRivetzAPI;
 
 import java.util.concurrent.Callable;
 
-public class Binder {
+class Binder {
     private ServiceConnection apiConnection;
     public IRivetzAPI api;
     private Context context;
