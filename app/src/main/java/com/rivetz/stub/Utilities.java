@@ -30,6 +30,14 @@ public final class Utilities {
         return data;
     }
 
+    public static int hexsize2ToInt(String s) {
+        if (s.length() != 2) return -1;
+        byte[] bytes = hexToBytes(s);
+        if (bytes.length != 1) return -2;
+        Byte b = bytes[0];
+        return b.intValue();
+    }
+
     public static String bytesToHex(byte[] a) {
         if (a == null) return "";
         StringBuilder sb = new StringBuilder(a.length * 2);
