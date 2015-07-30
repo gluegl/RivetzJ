@@ -8,7 +8,6 @@ import org.json.JSONArray;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
-import com.rivetz.stub.Rivet;
 
 
 public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
@@ -266,7 +265,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
 
     public boolean hasRule(Rivet.UsageRule ruleTested) {
         for (KeyUsageRule rule : rules) {
-            if (rule.rule == ruleTested) {
+            if (rule.mRule == ruleTested) {
                 return true;
             }
         }
@@ -275,7 +274,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
 
     public void deleteRule(Rivet.UsageRule ruleType) {
         for (int i=0; i<rules.size();i++) {
-            if (rules.get(i).rule == ruleType) {
+            if (rules.get(i).mRule == ruleType) {
                 rules.remove(i);
             }
         }

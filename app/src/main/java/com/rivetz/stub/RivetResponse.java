@@ -17,10 +17,18 @@ public class RivetResponse {
     public ServiceProviderRecord spRecord;
     int status = Rivet.ERROR_UNKNOWN;
 
+    /**
+     * Creates a response record with the given status code
+     * @param statusGiven This should be one of the constants defined in Rivet.ERROR_...
+     */
     public RivetResponse(int statusGiven) {
         status = statusGiven;
     }
 
+    /**
+     * Constructs a response record from the the given byte stream
+     * @param recordGiven contains a serialized response record to be parsed into the class
+     */
     public RivetResponse(byte[] recordGiven) {
         record = recordGiven;
         int offset = 0;

@@ -1,59 +1,71 @@
 package com.rivetz.stub;
 
-import java.util.ArrayList;
-
 /**
  * Packages an instruction to be delivered to the Rivet
  */
 public class Instruction {
     private int version = 1;
-    private int instructionCode;
-    protected byte[] instructionRecord;    // serialized instruction to send
+    private int mInstructionCode;
+    protected byte[] mInstructionRecord;    // serialized instruction to send
     protected byte[] paramData;            // param data to wrap in instruction
-    private Rivet rivet;
+    private Rivet mRivet;
 
-    public Instruction(Rivet rivetGiven, int codeGiven) {
-        rivet = rivetGiven;
-        instructionCode = codeGiven;
+    /**
+     * Generate a new Instruction with the given instruction code. Use addParam to
+     * extend the instruction with parameter data.
+     * @param rivet pointer to the Rivet instance for sending this instruction
+     * @param instructionCode see Rivet.INSTRUCT_... for defined instruction codes
+     */
+    public Instruction(Rivet rivet, int instructionCode) {
+        mRivet = rivet;
+        mInstructionCode = instructionCode;
         paramData = new byte[0];
     }
 
-    public Instruction(Rivet rivetGiven, byte[] instructionRecordGiven) {
-        rivet = rivetGiven;
-        instructionRecord = instructionRecordGiven;
+    /**
+     * Parse the given byte array into an instruction object.
+     * @param rivet pointer to the Rivet instance for sending this instruction
+     * @param instructionBytes serialized instruction record to parse into the class
+     */
+    public Instruction(Rivet rivet, byte[] instructionBytes) {
+        mRivet = rivet;
+        mInstructionRecord = instructionBytes;
     }
 
+    /**
+     * Prepare the instruction as a byte array that can delivered to the mRivet.execute method
+     */
     public void prepareData() {
         // start with version code
-        instructionRecord = Utilities.int2bytes(Utilities.uint16_t,version);
+        mInstructionRecord = Utilities.int2bytes(Utilities.uint16_t,version);
         // add SPID
-        instructionRecord = Utilities.bytesconcat(instructionRecord,Utilities.hexToBytes(rivet.spid));
+        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.hexToBytes(mRivet.spid));
         // add instruction code
-        instructionRecord = Utilities.bytesconcat(instructionRecord,Utilities.int2bytes(Utilities.uint16_t, instructionCode));
+        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.int2bytes(Utilities.uint16_t, mInstructionCode));
         // add parameter data
-        instructionRecord = Utilities.bytesconcat(instructionRecord,Utilities.int2bytes(Utilities.uint16_t,paramData.length));
-        instructionRecord = Utilities.bytesconcat(instructionRecord,paramData);
+        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.int2bytes(Utilities.uint16_t,paramData.length));
+        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,paramData);
         // add empty signature
-        instructionRecord = Utilities.bytesconcat(instructionRecord,Utilities.int2bytes(Utilities.uint16_t, 0));
+        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.int2bytes(Utilities.uint16_t, 0));
 
     }
 
     /**
-     * Sends the instruction to the rivet.
+     * Sends the instruction to the mRivet.
      *
      * Instructions are built up by instantiating and instance with an instruction
      * type and then adding parameter data, or by providing a fully prepared instruction
      * record to the constructor.
-     * @return rivet response data containing the original bytes and the parsed elements
+     * @return mRivet response data containing the original bytes and the parsed elements
      */
     public RivetResponse send() {
-        if (instructionRecord == null) {
+        if (mInstructionRecord == null) {
             prepareData();
         }
         try {
-            byte[] responseRecord = rivet.binder.api.execute(rivet.spid, instructionRecord);
+            byte[] responseRecord = mRivet.binder.api.execute(mRivet.spid, mInstructionRecord);
             if (responseRecord == null || responseRecord.length == 0) {
-                return new RivetResponse(rivet.binder.api.getStatus());
+                return new RivetResponse(mRivet.binder.api.getStatus());
             } else {
                 return new RivetResponse(responseRecord);
             }
@@ -62,6 +74,20 @@ public class Instruction {
         }
     }
 
+    /**
+     * Add a typed parameter to the instruction record.
+     *
+     * A parameter to an instruction is typed to one of the constants defined in
+     * Rivet.EXTRA_... Each type has an inherent datatype which determines how it
+     * is serialized into the instruction record.
+     *
+     * For example, if you call addParam with the extraId of Rivet.EXTRA_SPID this is
+     * understood to be a string. The result
+     * is that two bytes of length data plus the string chars are inserted into the
+     * InstructionRecord
+     * @param extraId refer to the constants defined in Rivet for extraId types
+     * @param value the value of the parameter typed according to the extraId
+     */
     public void addParam(String extraId, Object value) {
         if (extraId == Rivet.EXTRA_USAGERULES) {
             Rivet.UsageRule[] rules = (Rivet.UsageRule[])value;

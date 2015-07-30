@@ -4,20 +4,24 @@ import android.util.Log;
 
 import org.json.JSONException;
 import org.json.JSONObject;
-import com.rivetz.stub.Rivet;
+
 /**
  * Keys can be restrained by key usage rules that enforce the conditions under
- * which they are used. Key usage rules are attached to KeyRecords.
+ * which they are used. Key usage rules are attached to KeyRecords. Usage rule
+ * types are define in Rivet.java
  */
 public class KeyUsageRule {
-    // Usage rule types are publicly defined in Rivet.java
-    Rivet.UsageRule rule;
+    Rivet.UsageRule mRule;
 
-    public KeyUsageRule(Rivet.UsageRule ruleIn) {
-        rule = ruleIn;
+    /**
+     *
+     * @param rule
+     */
+    public KeyUsageRule(Rivet.UsageRule rule) {
+        mRule = rule;
     }
     public KeyUsageRule(String ruleStr) {
-        rule = Rivet.UsageRule.valueOf(ruleStr);
+        mRule = Rivet.UsageRule.valueOf(ruleStr);
     }
     public KeyUsageRule(JSONObject json) {
         parseJson(json);
@@ -30,7 +34,7 @@ public class KeyUsageRule {
 
     public void parseJson(JSONObject json) {
         try {
-            rule = Rivet.UsageRule.valueOf(json.getString("rule"));
+            mRule = Rivet.UsageRule.valueOf(json.getString("mRule"));
         } catch(JSONException e) {
             Log.e(Utilities.LOG_TAG, "JSON Parse error of KeyUsageRule");
         }
@@ -38,7 +42,7 @@ public class KeyUsageRule {
     public JSONObject getJson() {
         JSONObject json = new JSONObject();
         try {
-            json.put("rule",rule.toString());
+            json.put("mRule", mRule.toString());
         } catch(JSONException e) {
             json = null;
         }
@@ -53,7 +57,7 @@ public class KeyUsageRule {
     public byte[] Serialize() {
         try {
             // Build byte array values
-            byte[] rule_type = Utilities.int2bytes(Utilities.uint16_t, rule.getValue());
+            byte[] rule_type = Utilities.int2bytes(Utilities.uint16_t, mRule.getValue());
 
             return rule_type;
 
@@ -69,7 +73,7 @@ public class KeyUsageRule {
         Log.d(Utilities.LOG_TAG, "ParseTest KeyUsageRule Type = " + String.valueOf(new_rule));
         if (new_rule <= 0 || new_rule > Rivet.UsageRule.values().length) return false;
 
-        rule = Rivet.UsageRule.values()[new_rule - 1];
+        mRule = Rivet.UsageRule.values()[new_rule - 1];
 
         return true;
     }

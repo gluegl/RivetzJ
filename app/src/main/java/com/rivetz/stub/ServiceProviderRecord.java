@@ -152,6 +152,10 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		}
 	}
 
+    /**
+     * Render the class data into a serialized stream of bytes
+     * @return service provider record as byte array
+     */
     public byte[] serialize() {
         try {
             // Build byte array values
@@ -225,6 +229,11 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         }
     }
 
+    /**
+     * Load the service provider record from a a serialized stream of bytes
+     * @param bytedata byte array of a service provider data
+     * @return returns true if the parsing succeeds, otherwise false.
+     */
     public boolean Deserialize(byte[] bytedata) {
         int Offset = 0;
         byte[] remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint32_t);
@@ -330,6 +339,10 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         return true;
     }
 
+    /**
+     * Test the SPID value for proper formatting
+     * @return true/false
+     */
     public boolean validate() {
 		if (spid == null) return false;
 		else if (spid.isEmpty()) return false;
@@ -337,6 +350,13 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		else return true;
 	}
 
+    /**
+     * Add a key to the service provider record. NOTE that this method is used for
+     * constructing the class and is not useful for adding a real key to the record.
+     * Only the Rivet can make changes to a ServiceProviderRecord. Use Rivet.createKey
+     * to add a real key.
+     * @param key a KeyRecord to insert into the ServiceProviderRecord
+     */
     public void addKey(KeyRecord key) {
         if (keys == null) {
             keys = new ArrayList<KeyRecord>();
@@ -344,6 +364,12 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         keys.add(key);
     }
 
+    /**
+     * Delete a key from the service provider record. NOTE that this method is used
+     * for superficial class edits and is not useful for deleting a real key from the
+     * record. Only the Rivet can make changes to ServiceProviderRecord. Use Rivet.deleteKey
+     * @param keyName the name of the key to be deleted.
+     */
     public void deleteKey(String keyName) {
         if (keys != null) {
             for (int i=0; i<keys.size();i++) {
@@ -353,6 +379,12 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             }
         }
     }
+
+    /**
+     * Return the KeyRecord identified by the given KeyName
+     * @param keyName name of the key
+     * @return KeyRecord or Null if not found
+     */
     public KeyRecord getKey(String keyName) {
         if (keys != null) {
             for (KeyRecord key : keys) {
