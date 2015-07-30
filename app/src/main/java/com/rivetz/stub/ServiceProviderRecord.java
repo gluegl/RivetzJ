@@ -17,36 +17,71 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
+/**
+ * The Service Provider context information that is provided to the TEE when it processes an instruction.
+ */
 public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/ServiceProviderRecord
     public int status;
     public enum SignatureUsage {
-        SPIDKEY (0x0001),           // The SPR signature was signed using the Identity key of the SP
-                                    // and the key's respective signature scheme.
-        TA_WRAPPED_HASH(0x0002);    // The SPR signature is a SHA256 hash of the data to be signed wrapped
-                                    // into a secure object by the platform's wrapping function.
+        /**
+         * The SPR signature was signed using the Identity key of the SP
+         * and the key's respective signature scheme.
+         */
+        SPIDKEY (0x0001),
+        /**
+         * The SPR signature is a SHA256 hash of the data to be signed wrapped
+         * into a secure object by the platform's wrapping function.
+         */
+        TA_WRAPPED_HASH(0x0002);
 
         private final int value;
         private SignatureUsage(int value) {
             this.value = value;
         }
 
+        /**
+         * Return the short integer value of the enumerated type
+         */
         public int getValue() {
             return value;
         }
     }
 
+    /**
+     * Service Provider ID assigned during registration
+     */
     public String spid;			        // https://epistery.com/do/view/Main/ServiceProviderID
+    /**
+     * Service provider name as declared during registration. Max of 32 characters
+     */
 	public String name;                 // https://epistery.com/do/view/Main/ServiceProviderName
+    /**
+     * Service provider logo held as a bitmap byte array. The logo is used in the normal world app
+     * as an icon and also in the secure world as a visual indicator of the service provider
+     * for TUI (Trusted User Interface) dialogs
+     */
 	public byte[] logo;			        // https://epistery.com/do/view/Main/ServiceProviderLogo
+    /**
+     * Service Provider Logo in Android Bitmap format
+     */
     public Bitmap logoBmp;
-    public SignatureUsage sigusage = SignatureUsage.TA_WRAPPED_HASH;     //
+    /**
+     * Indicates how this service provider record is signed. All service provider records with
+     * working data are either signed by Rivetz.net or a similar server authorized to endorse a
+     * service provider, or by the device rivet
+     */
+    public SignatureUsage sigusage = SignatureUsage.TA_WRAPPED_HASH;
+    /**
+     * The signature on a ServiceProviderRecord ensures that only an authorized entity can
+     * change the data. Except for the pairing process where a newly created ServiceProviderRecord
+     * is signed by the endorsement authority (rivetz.net), this signature is applied by the
+     * hardware Rivet on the local device.
+     */
 	public byte[] signature;	        // https://epistery.com/do/view/Main/SPRecordSignature
                                         // Note, signature includes the signature header bytes
 	public ArrayList<KeyRecord> keys;	// https://epistery.com/do/view/Main/KeyRecord
 
-    public static final int KEY_RCRD_HRD_VERSION_01         = 0x0001;
-    public static final int SIG_USAGE_KEY_SPIDKEY           = 0x0001;
-    public static final int SIG_USAGE_KEY_TA_WRAPPED_HASH   = 0x0002;
+    public static final int SP_RCRD_HRD_VERSION_01         = 0x0001;
     public static final int sp_logo_image_type_id_value     = 0x0001;
     public static final int SPIDKEY_SIG_DATA_SIZE           = 64;
     public static final int TA_HASH_SIG_DATA_SIZE           = 32;
@@ -55,28 +90,56 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
     public static final int SP_NAME_MIN_DATA_SIZE           = 3;
     public static final int SIG_USAGE_KEY_SIZE              = Utilities.uint16_t;
 
+    /**
+     * Initialize and empty service provider record
+     */
 	public ServiceProviderRecord () {
 		spid = "";
 		name = "";
         keys = new ArrayList<KeyRecord>();
 	}
 
+    /**
+     * Initialize a service provider record with spid. This is useful for building the
+     * file name that stores the actual SPR
+     * @param spidGiven
+     */
 	public ServiceProviderRecord(String spidGiven) {
 		spid = spidGiven;
 		name = "";
         keys = new ArrayList<KeyRecord>();
 	}
 
+    /**
+     * Instantiate a service provider record from json data. This is unsigned and
+     * used only for presentation purposes.
+     *
+     * @param json JSON data for the service provider record needs to include at least the SPID
+     *             and the name
+     */
     public ServiceProviderRecord(JSONObject json) {
 		parseJson(json);
     }
 
+    /**
+     * Instantiate a service provider record from a structured byte array. The bytes are
+     * deserialized into the class structure according to an internally defined layout.
+     * A signature, if included, will be a signature on this
+     * bag of bytes.
+     * @param bytes byte array data for a service provider record formatted according to
+     *              Rivetz specification
+     */
     public ServiceProviderRecord(byte[] bytes) {
         if (!Deserialize(bytes)) {
             Log.e(Utilities.LOG_TAG, "byte[] Parse error of ServiceProviderRecord");
         }
     }
 
+    /**
+     * Return the Service Provider Record as a JSON object. This will include SPID,
+     * name and Key Records.
+     * @return JSONObject
+     */
     public JSONObject getJson() {
 		JSONObject json = new JSONObject();
 		try {
@@ -96,11 +159,19 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		return json;
 	}
 
+    /**
+     * Return the Service Provider Record as JSON
+     * @return JSON formatted string
+     */
 	@Override
 	public String toString() {
 		return getJson().toString();
 	}
 
+    /**
+     * Import service provider data from a JSON Object
+     * @param json JSON data including spid, name and keys, if any.
+     */
 	public void parseJson(JSONObject json) {
 		try {
 			spid = json.getString("spid");
@@ -119,6 +190,11 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		}
 	}
 
+    /**
+     * Parse JSON data into the service provider record as returned from Rivetz.net
+     * @param json JSON object including 'result', 'name' and 'logo'
+     * @return true if the parsing succeeds.
+     */
 	public boolean parseOnlineJson(JSONObject json) {
 		try {
 			String status = json.getString("result");
@@ -135,6 +211,10 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		return true;
 	}
 
+    /**
+     * Transform the logo bytes into an Android bitmap object
+     * @return Bitmap
+     */
     public Bitmap getLogoBmp() {
         if (logoBmp == null) {
             logoBmp = BitmapFactory.decodeByteArray(logo, 0, logo.length);
@@ -142,6 +222,10 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         return logoBmp;
     }
 
+    /**
+     * Given a string of JSON data, create a JSON Object and parse with parseJson
+     * @param string
+     */
 	public void parseString(String string) {
 		try {
 			parseJson(new JSONObject(string));
@@ -159,7 +243,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
     public byte[] serialize() {
         try {
             // Build byte array values
-            byte[] record_version = Utilities.int2bytes(Utilities.uint16_t, KEY_RCRD_HRD_VERSION_01);
+            byte[] record_version = Utilities.int2bytes(Utilities.uint16_t, SP_RCRD_HRD_VERSION_01);
             byte[] spid_data = Utilities.hexToBytes(spid);
             if (spid_data.length != SPID_DATA_VALUE_SIZE ) {
                 Log.e(Utilities.LOG_TAG, "SPID Length incorrect while creating ServiceProviderRecord");
@@ -319,7 +403,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         Log.d(Utilities.LOG_TAG, "ParseTest SP Record signature_size_value = " + String.valueOf(signature_size_value));
         if (size_signature_info_value != (signature_size_value + Utilities.uint16_t + Utilities.uint16_t)) return false;
         Log.d(Utilities.LOG_TAG, "ParseTest SP Record signature sizes are all good.");
-        if (new_sig_usage_value == SIG_USAGE_KEY_SPIDKEY && signature_size_value != SPIDKEY_SIG_DATA_SIZE) return false;
+        if (new_sig_usage_value == SignatureUsage.SPIDKEY.getValue() && signature_size_value != SPIDKEY_SIG_DATA_SIZE) return false;
         Log.d(Utilities.LOG_TAG, "ParseTest SP Record signature type matches size.");
 
         byte[] new_signature = Utilities.bytesofbytes(bytedata,Offset,signature_size_value);
