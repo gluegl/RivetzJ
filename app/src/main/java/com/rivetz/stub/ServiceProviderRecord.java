@@ -2,7 +2,6 @@ package com.rivetz.stub;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.os.Environment;
 import android.util.Base64;
 import android.util.Log;
 
@@ -10,10 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
@@ -330,7 +325,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         Offset += Utilities.uint16_t;
         int new_record_version_value = Utilities.bytes2int(record_version,Utilities.uint16_t);
         Log.d(Utilities.LOG_TAG, "ParseTest SP Record Version = " + String.valueOf(new_record_version_value));
-        if (new_record_version_value != KEY_RCRD_HRD_VERSION_01) return false;
+        if (new_record_version_value != SP_RCRD_HRD_VERSION_01) return false;
 
         byte[] size_signature_info = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         Offset += Utilities.uint16_t;
