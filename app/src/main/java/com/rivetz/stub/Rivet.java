@@ -153,7 +153,10 @@ public class Rivet {
         ECDSA_DFLT(0x0003),
         BITCOIN_DFLT(0x0004),
         VCOIN_CUSTOM(0x0005),
-        ECDSA_NISTP256(0x0006);
+        ECDSA_NISTP256(0x0006),
+        COIN_BITCOIN_TEST(0x0007),
+        COIN_LITECOIN(0x0008),
+        COIN_PEERCOIN(0x0009);
 
         private final int value;
         private KeyType(int value) {
@@ -171,6 +174,10 @@ public class Rivet {
     public static final int KEYTYPE_ECDSA_DFLT = 0x0003;
     public static final int KEYTYPE_BITCOIN_DFLT = 0x0004;
     public static final int KEYTYPE_VCOIN_CUSTOM = 0x0005;
+    public static final int KEYTYPE_ECDSA_NISTP256 = 0x0006;
+    public static final int KEYTYPE_COIN_BITCOIN_TEST = 0x0007;
+    public static final int KEYTYPE_COIN_LITECOIN = 0x0008;
+    public static final int KEYTYPE_COIN_PEERCOIN = 0x0009;
 
     /**
      * Key Usage Rules
