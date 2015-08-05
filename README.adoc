@@ -1,6 +1,65 @@
 = RivetzStub
 
-Helper class for interfacing with Rivetz
+RivetzJ Source Project
 
 See https://epistery.com/do/view/Main/RivetzStub[RivetzStub on the wiki] for deployment instructions.
+
+== Modules
+
+We're in the middle of some refactoring. Not all these modules are fully-fleshed out, but this is the direction we're going:
+
+* `app` - this is currently the `rivetz-bridge` AAR android library (moudule will be renamed)
+* `rivetz-lib` - the core Rivetz Java library
+* `rivetz-test` - contains the `RivetSimulator` and other components for testing
+* `rivetz-server` - a demonstration Rivetz server built using http://projects.spring.io/spring-boot/[Spring Boot]
+
+== Building with Gradle
+
+=== Full Build
+
+To do a full build with Gradle
+
+    ./gradlew clean build
+
+This should produce the following outputs:
+
+* `app/build/outputs/aar/app-debug.aar`
+* `app/build/outputs/aar/app-release.aar`
+
+=== Running the Server from Gradle
+
+To run the Rivetz Demo Server using Spring Boot
+
+    ./gradlew :rivetz-server:bootRun
+
+At this point the server is only a "hello world"-style server. To test that it is running open http://localhost:8080/hello
+
+=== Building the Server
+
+To build the server into a Spring Boot executable JAR:
+
+    ./gradlew :rivetz-server:assemble
+
+To run the server use:
+
+    java -jar rivetz-server/build/libs/rivetz-server-0.1.jar
+
+=== Building Documentation
+
+Although most documentation is on the website and wiki, there is some documentation directly in the source repo. 
+
+NOTE::
+This part of the build requires that the http://www.graphviz.org/Download.php[GraphViz] command-line tool be installed.
+
+To build it:
+
+    ./gradlew asciidoctor
+
+A small amount of UML documentation will be built into the file `./build/adoc/rivet.html`
+
+
+
+
+
+
 

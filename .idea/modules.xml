@@ -4,6 +4,9 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/RivetzStub.iml" filepath="$PROJECT_DIR$/RivetzStub.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rivetz-lib/rivetz-lib.iml" filepath="$PROJECT_DIR$/rivetz-lib/rivetz-lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rivetz-server/rivetz-server.iml" filepath="$PROJECT_DIR$/rivetz-server/rivetz-server.iml" />
+      <module fileurl="file://$PROJECT_DIR$/rivetz-test/rivetz-test.iml" filepath="$PROJECT_DIR$/rivetz-test/rivetz-test.iml" />
     </modules>
   </component>
 </project>
