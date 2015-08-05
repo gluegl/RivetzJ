@@ -44,6 +44,18 @@ To run the server use:
 
     java -jar rivetz-server/build/libs/rivetz-server-0.1.jar
 
+=== Building Documentation
+
+Although most documentation is on the website and wiki, there is some documentation directly in the source repo. 
+
+NOTE::
+This part of the build requires that the http://www.graphviz.org/Download.php[GraphViz] command-line tool be installed.
+
+To build it:
+
+    ./gradlew asciidoctor
+
+A small amount of UML documentation will be built into the file `.build/adoc/rivet.html`
 
 
 
