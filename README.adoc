@@ -55,7 +55,7 @@ To build it:
 
     ./gradlew asciidoctor
 
-A small amount of UML documentation will be built into the file `.build/adoc/rivet.html`
+A small amount of UML documentation will be built into the file `./build/adoc/rivet.html`
 
 
 
