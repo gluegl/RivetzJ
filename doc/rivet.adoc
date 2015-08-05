@@ -1,0 +1,64 @@
+= Rivetz UML
+
+:imagesdir: images
+
+This is an experiment using PlantUML and AsciiDoctor to generate UML diagrams for Rivetz.
+
+== Rivet
+
+This diagram shows the *proposed* state of the `Rivet` class hierarchy.
+
+[plantuml, diagram-classes, svg]
+....
+skinparam packageStyle Rect
+skinparam shadowing false
+hide empty members
+
+namespace com.rivetz.lib {
+    interface Rivet
+    Rivet <|-- abstract class RivetBase
+}
+
+namespace com.rivetz.bridge {
+    com.rivetz.lib.RivetBase <|-- RivetAndroid
+}
+
+namespace com.rivetz.test {
+    com.rivetz.lib.RivetBase <|-- RivetSimulator
+}
+....
+
+=== Packages
+
+com.rivetz.lib::
+Pure-Java, minimal dependencies
+
+com.rivetz.bridge::
+Android dependencies
+
+com.rivetz.test::
+Test fixtures, bitcoinj dependencies
+
+=== Classes
+
+Rivet::
+Interface definition
+
+RivetBase::
+Abstract base class, common fields and methods for all implementations
+
+RivetAndroid::
+The original, Android implementation of Rivet
+
+RivetSimulator::
+Bitcoinj-based simulation of Rivet functionality
+
+=== TODO
+
+. Rivetz Encoder (creates and signs Instruction Records)
+. Spring Boot Server
+. Command-line tool
+.. RoboVM?
+. RivetzStub -> RivetzJ
+
+
