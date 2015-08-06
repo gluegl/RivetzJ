@@ -15,7 +15,7 @@ public class RivetResponse {
     public String spid;
     public int instructionCode;
     public ServiceProviderRecord spRecord;
-    int status = RivetBase.ERROR_UNKNOWN;
+    public int status = RivetBase.ERROR_UNKNOWN;
 
     /**
      * Creates a response record with the given status code

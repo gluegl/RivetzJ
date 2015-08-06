@@ -9,7 +9,7 @@ import java.text.DecimalFormat;
 /**
  * A collection of functions for handling the details of coin instructions
  */
-class CoinUtils {
+public class CoinUtils {
 
     public static String getTransactionsFromJson(String str) {
         try {

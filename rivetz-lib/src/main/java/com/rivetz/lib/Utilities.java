@@ -1,7 +1,5 @@
 package com.rivetz.lib;
 
-import android.os.Build;
-
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
