@@ -1,18 +1,19 @@
-package com.rivetz.bridge;
-
-import android.util.Log;
+package com.rivetz.lib;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 
 
 public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
+    private static final Logger log = LoggerFactory.getLogger(KeyRecord.class);
 
-    public Rivet.KeyType type;                    // https://epistery.com/do/view/Main/KeyType
+    public RivetBase.KeyType type;                    // https://epistery.com/do/view/Main/KeyType
     public String name;                     // https://epistery.com/do/view/Main/KeyName
 	public byte[] publicKey;                // https://epistery.com/do/edit/Main/PublicKey
 	public byte[] privateKey;               // https://epistery.com/do/edit/Main/PrivateKey
@@ -24,29 +25,29 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
 
     public KeyRecord() {
         name = "";
-        type = Rivet.KeyType.UNKNOWN;
+        type = RivetBase.KeyType.UNKNOWN;
     }
     public KeyRecord(String nameGiven) {
         name = nameGiven;
-        type = Rivet.KeyType.UNKNOWN;
+        type = RivetBase.KeyType.UNKNOWN;
     }
     public KeyRecord(JSONObject json) {
         parseJson(json);
         if (type == null) {
-            type = Rivet.KeyType.UNKNOWN;
+            type = RivetBase.KeyType.UNKNOWN;
         }
     }
     public KeyRecord(byte[] bytes) {
         if (!Deserialize(bytes)) {
-            type = Rivet.KeyType.UNKNOWN;
-            Log.e(Utilities.LOG_TAG, "byte[] Parse error of KeyRecord");
+            type = RivetBase.KeyType.UNKNOWN;
+            log.error("byte[] Parse error of KeyRecord");
         }
     }
-    public KeyRecord(Rivet.KeyType typeGiven) {
+    public KeyRecord(RivetBase.KeyType typeGiven) {
         type = typeGiven;
         name = "";
     }
-    public KeyRecord(Rivet.KeyType typeGiven, String nameGiven) {
+    public KeyRecord(RivetBase.KeyType typeGiven, String nameGiven) {
         type = typeGiven;
         name = nameGiven;
     }
@@ -78,7 +79,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
         try {
             name = json.getString("name");
             // TODO: is keytype in JSON a string or an int?
-            type = Rivet.KeyType.valueOf(json.getString("type"));
+            type = RivetBase.KeyType.valueOf(json.getString("type"));
             publicKey = Utilities.hexToBytes(json.getString("publicKey"));
             privateKey = Utilities.hexToBytes(json.getString("privateKey"));
             JSONArray jsonRules = json.getJSONArray("rules");
@@ -89,7 +90,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
                 }
             }
         } catch(JSONException e) {
-            Log.e(Utilities.LOG_TAG, "JSON Parse error of KeyRecord");
+            log.error("JSON Parse error of KeyRecord");
             name="";
         }
     }
@@ -153,15 +154,15 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
                 retval = Utilities.bytesconcat(retval, RulesBytes);
             }
             if (recordsize != retval.length) {
-                Log.e(Utilities.LOG_TAG, "RecordSize Mismatch KeyRecord");
+                log.error("RecordSize Mismatch KeyRecord");
             }
             return retval;
 
         } catch(UnsupportedEncodingException e ) {
-            Log.e(Utilities.LOG_TAG, "Encoding byte write error of KeyRecord");
+            log.error("Encoding byte write error of KeyRecord");
             return null;
         } catch(Exception e ) {
-            Log.e(Utilities.LOG_TAG, "general error of KeyRecord");
+            log.error("general error of KeyRecord");
             return null;
         }
     }
@@ -172,24 +173,24 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
         byte[] remaining_rcrd_bytes = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         Offset += Utilities.uint16_t;
         int remaining_rcrd_value = Utilities.bytes2int(remaining_rcrd_bytes,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
+        log.debug("ParseTest KeyRecord Remaining Bytes = {}", String.valueOf(remaining_rcrd_value));
         if (remaining_rcrd_value != bytedata.length - Utilities.uint16_t) return false;
 
         byte[] record_version = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         Offset += Utilities.uint16_t;
         int new_record_version_value = Utilities.bytes2int(record_version,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Version = " + String.valueOf(new_record_version_value));
+        log.debug("ParseTest KeyRecord Version = {}", String.valueOf(new_record_version_value));
         if (new_record_version_value != record_version_value) return false;
 
         byte[] key_type_id = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         int new_type = Utilities.bytes2int(key_type_id,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Type = " + String.valueOf(new_type));
-        if (new_type < 0 || new_type > Rivet.KeyType.values().length) return false;
+        log.debug("ParseTest KeyRecord Type = " + String.valueOf(new_type));
+        if (new_type < 0 || new_type > RivetBase.KeyType.values().length) return false;
         Offset += Utilities.uint16_t;
 
         byte[] length_name_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         int length_name = Utilities.bytes2int(length_name_data,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Name Length = " + String.valueOf(length_name));
+        log.debug("ParseTest KeyRecord Name Length = " + String.valueOf(length_name));
         if (length_name < RIV_TA_SP_KEY_RCRD_KEY_NAME_MIN_SIZE || length_name > RIV_TA_SP_KEY_RCRD_KEY_NAME_MAX_SIZE) return false;
         Offset += Utilities.uint16_t;
 
@@ -200,14 +201,14 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
             new_name = new String(new_name_data, "UTF-8");
         }
         catch (UnsupportedEncodingException e) {
-            Log.e(Utilities.LOG_TAG, "byte[] Parse error of KeyRecord");
+            log.error("byte[] Parse error of KeyRecord");
             return false;
         }
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Name = " + new_name);
+        log.debug("ParseTest KeyRecord Name = " + new_name);
 
         byte[] public_key_len_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         int public_key_len = Utilities.bytes2int(public_key_len_data,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Public Key Length = " + String.valueOf(public_key_len));
+        log.debug("ParseTest KeyRecord Public Key Length = " + String.valueOf(public_key_len));
         // TODO what is true max size of public key data.   This might not be determined
         // if (public_key_len < 0 || public_key_len > 2048) return false;
         Offset += Utilities.uint16_t;
@@ -223,7 +224,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
         // TODO what is true max size of private key data.   This might not be determined
         if (private_key_len < 0 || private_key_len > 2048) return false;
         Offset += Utilities.uint16_t;
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Private Key Length = " + String.valueOf(private_key_len));
+        log.debug("ParseTest KeyRecord Private Key Length = " + String.valueOf(private_key_len));
 
         byte[] new_privateKey = new byte[0];
         if (private_key_len > 0) {
@@ -233,7 +234,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
 
         byte[] num_rules_data = Utilities.bytesofbytes(bytedata,Offset,Utilities.uint16_t);
         int num_rules = Utilities.bytes2int(num_rules_data,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Number of Rules = " + String.valueOf(num_rules));
+        log.debug("ParseTest KeyRecord Number of Rules = " + String.valueOf(num_rules));
         Offset += Utilities.uint16_t;
 
         ArrayList<KeyUsageRule> new_rules = new ArrayList<KeyUsageRule>();
@@ -243,11 +244,11 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
 
             new_rules.add(new KeyUsageRule(rule_data));
         }
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyRecord Offset Result = " + String.valueOf(Offset));
+        log.debug("ParseTest KeyRecord Remaining Bytes = " + String.valueOf(remaining_rcrd_value));
+        log.debug("ParseTest KeyRecord Offset Result = " + String.valueOf(Offset));
         if (remaining_rcrd_value + Utilities.uint16_t != Offset) return false;
 
-        type = Rivet.KeyType.values()[new_type];
+        type = RivetBase.KeyType.values()[new_type];
         name = new_name;
         publicKey = new_publicKey;
         privateKey = new_privateKey;
@@ -263,7 +264,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
         rules.add(rule);
     }
 
-    public boolean hasRule(Rivet.UsageRule ruleTested) {
+    public boolean hasRule(RivetBase.UsageRule ruleTested) {
         for (KeyUsageRule rule : rules) {
             if (rule.mRule == ruleTested) {
                 return true;
@@ -272,7 +273,7 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
         return false;
     }
 
-    public void deleteRule(Rivet.UsageRule ruleType) {
+    public void deleteRule(RivetBase.UsageRule ruleType) {
         for (int i=0; i<rules.size();i++) {
             if (rules.get(i).mRule == ruleType) {
                 rules.remove(i);

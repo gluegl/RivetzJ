@@ -1,9 +1,9 @@
-package com.rivetz.bridge;
-
-import android.util.Log;
+package com.rivetz.lib;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Keys can be restrained by key usage rules that enforce the conditions under
@@ -11,32 +11,33 @@ import org.json.JSONObject;
  * types are define in Rivet.java
  */
 public class KeyUsageRule {
-    Rivet.UsageRule mRule;
+    private static final Logger log = LoggerFactory.getLogger(KeyUsageRule.class);
+    RivetBase.UsageRule mRule;
 
     /**
      *
      * @param rule
      */
-    public KeyUsageRule(Rivet.UsageRule rule) {
+    public KeyUsageRule(RivetBase.UsageRule rule) {
         mRule = rule;
     }
     public KeyUsageRule(String ruleStr) {
-        mRule = Rivet.UsageRule.valueOf(ruleStr);
+        mRule = RivetBase.UsageRule.valueOf(ruleStr);
     }
     public KeyUsageRule(JSONObject json) {
         parseJson(json);
     }
     public KeyUsageRule(byte[] bytes) {
         if (!Deserialize(bytes)) {
-            Log.e(Utilities.LOG_TAG, "byte[] Parse error of KeyUsageRule");
+            log.error("byte[] Parse error of KeyUsageRule");
         }
     }
 
     public void parseJson(JSONObject json) {
         try {
-            mRule = Rivet.UsageRule.valueOf(json.getString("mRule"));
+            mRule = RivetBase.UsageRule.valueOf(json.getString("mRule"));
         } catch(JSONException e) {
-            Log.e(Utilities.LOG_TAG, "JSON Parse error of KeyUsageRule");
+            log.error("JSON Parse error of KeyUsageRule");
         }
     }
     public JSONObject getJson() {
@@ -62,7 +63,7 @@ public class KeyUsageRule {
             return rule_type;
 
         } catch(Exception e ) {
-            Log.e(Utilities.LOG_TAG, "byte write error of KeyUsageRule");
+            log.error("byte write error of KeyUsageRule");
             return null;
         }
     }
@@ -70,10 +71,10 @@ public class KeyUsageRule {
     public boolean Deserialize(byte[] bytedata) {
         if (Utilities.uint16_t != bytedata.length) return false;
         int new_rule = Utilities.bytes2int(bytedata,Utilities.uint16_t);
-        Log.d(Utilities.LOG_TAG, "ParseTest KeyUsageRule Type = " + String.valueOf(new_rule));
-        if (new_rule <= 0 || new_rule > Rivet.UsageRule.values().length) return false;
+        log.debug("ParseTest KeyUsageRule Type = " + String.valueOf(new_rule));
+        if (new_rule <= 0 || new_rule > RivetBase.UsageRule.values().length) return false;
 
-        mRule = Rivet.UsageRule.values()[new_rule - 1];
+        mRule = RivetBase.UsageRule.values()[new_rule - 1];
 
         return true;
     }

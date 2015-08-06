@@ -1,4 +1,4 @@
-package com.rivetz.bridge;
+package com.rivetz.lib;
 
 /**
  * Packages an instruction to be delivered to the Rivet
@@ -8,7 +8,7 @@ public class Instruction {
     private int mInstructionCode;
     protected byte[] mInstructionRecord;    // serialized instruction to send
     protected byte[] paramData;            // param data to wrap in instruction
-    private Rivet mRivet;
+    private RivetBase mRivet;
 
     /**
      * Generate a new Instruction with the given instruction code. Use addParam to
@@ -16,7 +16,7 @@ public class Instruction {
      * @param rivet pointer to the Rivet instance for sending this instruction
      * @param instructionCode see Rivet.INSTRUCT_... for defined instruction codes
      */
-    public Instruction(Rivet rivet, int instructionCode) {
+    public Instruction(RivetBase rivet, int instructionCode) {
         mRivet = rivet;
         mInstructionCode = instructionCode;
         paramData = new byte[0];
@@ -27,7 +27,7 @@ public class Instruction {
      * @param rivet pointer to the Rivet instance for sending this instruction
      * @param instructionBytes serialized instruction record to parse into the class
      */
-    public Instruction(Rivet rivet, byte[] instructionBytes) {
+    public Instruction(RivetBase rivet, byte[] instructionBytes) {
         mRivet = rivet;
         mInstructionRecord = instructionBytes;
     }
@@ -37,7 +37,7 @@ public class Instruction {
      */
     public void prepareData() {
         // start with version code
-        mInstructionRecord = Utilities.int2bytes(Utilities.uint16_t,version);
+        mInstructionRecord = Utilities.int2bytes(Utilities.uint16_t, version);
         // add SPID
         mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.hexToBytes(mRivet.spid));
         // add instruction code
@@ -63,14 +63,14 @@ public class Instruction {
             prepareData();
         }
         try {
-            byte[] responseRecord = mRivet.binder.api.execute(mRivet.spid, mInstructionRecord);
+            byte[] responseRecord = mRivet.execute(mRivet.spid, mInstructionRecord);
             if (responseRecord == null || responseRecord.length == 0) {
-                return new RivetResponse(mRivet.binder.api.getStatus());
+                return new RivetResponse(mRivet.getStatus());
             } else {
                 return new RivetResponse(responseRecord);
             }
         } catch(Exception e) {
-            return new RivetResponse(Rivet.ERROR_UNKNOWN);
+            return new RivetResponse(RivetBase.ERROR_UNKNOWN);
         }
     }
 
@@ -89,30 +89,30 @@ public class Instruction {
      * @param value the value of the parameter typed according to the extraId
      */
     public void addParam(String extraId, Object value) {
-        if (extraId == Rivet.EXTRA_USAGERULES) {
-            Rivet.UsageRule[] rules = (Rivet.UsageRule[])value;
+        if (extraId == RivetBase.EXTRA_USAGERULES) {
+            RivetBase.UsageRule[] rules = (RivetBase.UsageRule[])value;
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t, rules.length));
-            for (Rivet.UsageRule rule : rules) {
+            for (RivetBase.UsageRule rule : rules) {
                 paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t,rule.getValue()));
             }
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_STRING+"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_STRING+"_).*")) {
             paramData = Utilities.bytesconcat(paramData,Utilities.stringToByteStruct((String) value));
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT8+"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_UINT8+"_).*")) {
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint8_t,(Integer)value));
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT16+"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_UINT16+"_).*")) {
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t,(Integer)value));
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT32+"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_UINT32+"_).*")) {
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint32_t,(Integer)value));
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_UINT64+"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_UINT64+"_).*")) {
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint64_t,(Integer)value));
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_BOOLEAN+"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_BOOLEAN+"_).*")) {
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint8_t, (Boolean) value ? 1 : 0));
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_HEXSTRING +"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_HEXSTRING +"_).*")) {
             byte[] valueNew = Utilities.hexToBytes((String) value);
             byte[] lengthBytes = Utilities.int2bytes(Utilities.uint16_t, valueNew.length);
             paramData = Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));
             paramData = Utilities.bytesconcat(paramData, valueNew);
-        } else if (extraId.matches("^("+Rivet.EXTRATYPE_BYTES +"_).*")) {
+        } else if (extraId.matches("^("+ RivetBase.EXTRATYPE_BYTES +"_).*")) {
             byte[] valueNew = (byte[])value;
             byte[] lengthBytes = Utilities.int2bytes(Utilities.uint16_t, valueNew.length);
             paramData = Utilities.bytesconcat(paramData, Utilities.bytesconcat(lengthBytes, valueNew));

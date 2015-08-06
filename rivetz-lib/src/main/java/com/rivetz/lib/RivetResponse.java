@@ -1,4 +1,4 @@
-package com.rivetz.bridge;
+package com.rivetz.lib;
 
 /**
  * Parses the response from a RivetInstruction.
@@ -15,7 +15,7 @@ public class RivetResponse {
     public String spid;
     public int instructionCode;
     public ServiceProviderRecord spRecord;
-    int status = Rivet.ERROR_UNKNOWN;
+    int status = RivetBase.ERROR_UNKNOWN;
 
     /**
      * Creates a response record with the given status code
@@ -61,7 +61,7 @@ public class RivetResponse {
         // extract SPR including initial length value
         byte[] sprBytes = Utilities.bytesofbytes(record, offset, sprLength+Utilities.uint32_t);
 
-        if (returnStatus == Rivet.ERROR_NONE) {
+        if (returnStatus == RivetBase.ERROR_NONE) {
             spRecord = new ServiceProviderRecord(sprBytes);
         }
     }

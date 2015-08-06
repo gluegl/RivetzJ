@@ -1,7 +1,10 @@
 package com.rivetz.bridge;
 
 import android.content.Context;
-import android.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.rivetz.lib.ServiceProviderRecord;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -19,6 +22,7 @@ import java.util.ArrayList;
  * Records are stored on disk in byte stream format
  */
 public class ServiceProviderManager {
+    private static final Logger log = LoggerFactory.getLogger(ServiceProviderManager.class);
     public int status; //TODO: normalize error handling for SPM
     // the array list is is used in an a display adapter in MainActivity
     public ArrayList<ServiceProviderRecord> list;
@@ -71,7 +75,7 @@ public class ServiceProviderManager {
             outputStream.write(record.serialize());
             outputStream.close();
         } catch (Exception e) {
-            Log.e(Utilities.LOG_TAG, "Failed to write SP Record to disk");
+            log.error("Failed to write SP Record to disk");
             e.printStackTrace();
         }
         loadAllLocal();
@@ -87,7 +91,7 @@ public class ServiceProviderManager {
         try {
             mContext.deleteFile(filename);
         } catch(Exception e) {
-            Log.e(Utilities.LOG_TAG, "Failed to delete "+filename);
+            log.error("Failed to delete "+filename);
             return ResultCode.FAIL;
         }
         loadAllLocal();
@@ -133,7 +137,7 @@ public class ServiceProviderManager {
                 data = baos.toByteArray();
             }
         } catch (Exception e) {
-            Log.w(Utilities.LOG_TAG, "Failed to load "+filename);
+            log.warn("Failed to load "+filename);
             e.printStackTrace();
         }
         if (data.length == 0) {

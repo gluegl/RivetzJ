@@ -1,4 +1,4 @@
-package com.rivetz.bridge;
+package com.rivetz.lib;
 
 import org.json.JSONArray;
 import org.json.JSONException;
