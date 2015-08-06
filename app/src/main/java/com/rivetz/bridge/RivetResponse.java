@@ -1,4 +1,4 @@
-package com.rivetz.stub;
+package com.rivetz.bridge;
 
 /**
  * Parses the response from a RivetInstruction.

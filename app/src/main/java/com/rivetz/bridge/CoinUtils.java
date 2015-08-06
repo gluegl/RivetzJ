@@ -1,6 +1,4 @@
-package com.rivetz.stub;
-
-import com.rivetz.stub.Utilities;
+package com.rivetz.bridge;
 
 import org.json.JSONArray;
 import org.json.JSONException;

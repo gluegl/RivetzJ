@@ -10,7 +10,7 @@
 * THE SOFTWARE.
 */
 
-package com.rivetz.stub;
+package com.rivetz.bridge;
 
 import android.app.Activity;
 import android.content.Context;

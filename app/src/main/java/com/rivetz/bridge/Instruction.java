@@ -1,4 +1,4 @@
-package com.rivetz.stub;
+package com.rivetz.bridge;
 
 /**
  * Packages an instruction to be delivered to the Rivet

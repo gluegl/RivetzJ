@@ -1,4 +1,4 @@
-package com.rivetz.stub;
+package com.rivetz.bridge;
 
 import android.app.Service;
 import android.content.ComponentName;
