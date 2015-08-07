@@ -1,5 +1,6 @@
 package com.rivetz.lib;
 
+import org.apache.commons.codec.binary.Base64;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -194,8 +195,9 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 			}
 			name = json.getString("name");
             String logoString = json.getString("logo");
-            // TODO: Base64 decode without Android
-            // logo = Base64.decode(logoString,Base64.DEFAULT);
+            // logo = Base64.decode(logoString,Base64.DEFAULT); // android.util version
+            logo = Base64.decodeBase64(logoString);
+            logo = null;
 		} catch(JSONException e) {
             log.error("JSON Parse error of ServiceProviderRecord");
 			name="";
