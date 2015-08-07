@@ -1,11 +1,24 @@
 package com.rivetz.bridge;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Build;
 
 /**
  * Android-specific methods extracted from Utilities class that is now in rivetz-lib.
  */
 public class AndroidUtilities {
+
+    /**
+     * Transform a stream of bytes into an Android bitmap object
+     *
+     * @param imageBytes byte array containing a raw PNG bitmap image
+     * @return Bitmap
+     */
+    public Bitmap getLogoBmp(byte[] imageBytes) {
+        Bitmap   logoBmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
+        return logoBmp;
+    }
 
     public static String getDeviceName() {
         String manufacturer = Build.MANUFACTURER;

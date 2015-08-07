@@ -55,11 +55,7 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
      * for TUI (Trusted User Interface) dialogs
      */
 	public byte[] logo;			        // https://epistery.com/do/view/Main/ServiceProviderLogo
-    /**
-     * Service Provider Logo in Android Bitmap format
-     * TODO: Implement Bitmap without Android Dependency
-     */
-//    public Bitmap logoBmp;
+
     /**
      * Indicates how this service provider record is signed. All service provider records with
      * working data are either signed by Rivetz.net or a similar server authorized to endorse a
@@ -206,18 +202,6 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
 		}
 		return true;
 	}
-
-    /**
-     * Transform the logo bytes into an Android bitmap object
-     * TODO: Reimplement without Android Dependency
-     * @return Bitmap
-     */
-//    public Bitmap getLogoBmp() {
-//        if (logoBmp == null) {
-//            logoBmp = BitmapFactory.decodeByteArray(logo, 0, logo.length);
-//        }
-//        return logoBmp;
-//    }
 
     /**
      * Given a string of JSON data, create a JSON Object and parse with parseJson
