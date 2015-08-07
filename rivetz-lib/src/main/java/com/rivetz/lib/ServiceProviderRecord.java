@@ -177,8 +177,9 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             }
 		} catch(JSONException e) {
             log.error("JSON Parse error of ServiceProviderRecord");
-            spid="";
-			name="";
+            throw new RuntimeException("Invalid JSON", e);
+//          spid="";
+//			name="";
 		}
 	}
 
