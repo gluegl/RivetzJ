@@ -26,7 +26,7 @@ class RivetSimulatorSpec extends Specification {
     }
 
     def "Can create a valid Bitcoin key"() {
-        when: "We create a Bitcion key"
+        when: "We create a Bitcoin key"
         def keyrec = rivet.createKey(RivetBase.KeyType.BITCOIN_DFLT, "testkey")
 
         then: "KeyRecord fields are initialized properly"

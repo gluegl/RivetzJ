@@ -36,7 +36,7 @@ public class RivetSimulator extends RivetBase {
 
     @Override
     public boolean isInitialized() {
-        return false;
+        return true;
     }
 
     @Override
@@ -79,16 +79,6 @@ public class RivetSimulator extends RivetBase {
         return true;
     }
 
-    /**
-     * TODO: share this code (and other similar methods) with RivetInstructBase in yet another BaseClass?
-     * @param type
-     * @return
-     */
-    @Override
-    public KeyRecord createKey(RivetBase.KeyType type) {
-        return(createKey(type, Utilities.generateName()));
-    }
-
     @Override
     public KeyRecord createKey(KeyType type, String name, UsageRule... rules) {
         KeyRecord keyrec = new KeyRecord(type, name);
@@ -108,11 +98,6 @@ public class RivetSimulator extends RivetBase {
         }
         keyMap.put(keyrec.name, keyrec);
         return keyrec;
-    }
-
-    @Override
-    public KeyRecord addKey(String publicData, String securedData, UsageRule... rules) {
-        return(addKey(Utilities.generateName(),publicData,securedData,rules ));
     }
 
     @Override
@@ -185,7 +170,7 @@ public class RivetSimulator extends RivetBase {
                 break;
 
             case ECDSA_DFLT:
-                // Alternate (simpler) signing than Bitcionish
+                // Alternate (simpler) signing than Bitcoinish
                 hash = Sha256Hash.of(payload);
                 ecSig = key.sign(hash);
                 binSig = ecSig.encodeToDER();
@@ -196,11 +181,6 @@ public class RivetSimulator extends RivetBase {
         }
         String sig = Utilities.bytesToHex(binSig);
         return sig;
-    }
-
-    @Override
-    public String sign(String name, String payload) {
-        return sign(name,payload.getBytes());
     }
 
     /**
@@ -236,32 +216,7 @@ public class RivetSimulator extends RivetBase {
     }
 
     @Override
-    public String hash(String hashAlgo, String payload) {
-        return null;
-    }
-
-    @Override
     public String AESEncrypt(String keyName, byte[] payload, boolean reverse) {
-        return null;
-    }
-
-    @Override
-    public String AESEncrypt(String keyName, byte[] payload) {
-        return null;
-    }
-
-    @Override
-    public String AESEncrypt(String keyName, String payload) {
-        return null;
-    }
-
-    @Override
-    public String AESDecrypt(String keyName, byte[] payload) {
-        return null;
-    }
-
-    @Override
-    public String AESDecrypt(String keyName, String payload) {
         return null;
     }
 
