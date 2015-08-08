@@ -1,9 +1,13 @@
 package com.rivetz.lib
 
+import com.rivetz.test.json.GStringCategory
+import com.rivetz.test.json.StringCategory
 import org.json.JSONObject
 import spock.lang.Ignore
 import spock.lang.Specification
+import spock.util.mop.Use
 
+@Use([GStringCategory, StringCategory])
 class ServiceProviderRecordSpec extends Specification {
     static final String testSpid = "test-spid"
     static final String testName = "test-name"
@@ -21,13 +25,8 @@ class ServiceProviderRecordSpec extends Specification {
 
     def "can construct using JSON with empty keys array"() {
         when:
-        JSONObject json = new JSONObject()
-        json.put("spid", testSpid)
-        json.put("name", testName)
-        json.put("keys", [])
-        println json
+        def json = "{spid: ${testSpid}, name: ${testName}, keys: []}" as JSONObject
         def spRecord = new ServiceProviderRecord(json)
-        println spRecord
 
         then:
         spRecord != null
@@ -39,12 +38,8 @@ class ServiceProviderRecordSpec extends Specification {
     @Ignore("ServiceProviderRecord is broken for this case, @Ignore should be removed and bug fixed?")
     def "can construct using JSON without  keys array"() {
         when:
-        JSONObject json = new JSONObject()
-        json.put("spid", testSpid)
-        json.put("name", testName)
-        println json
+        def json = "{spid: ${testSpid}, name: ${testName}}" as JSONObject
         def spRecord = new ServiceProviderRecord(json)
-        println spRecord
 
         then:
         spRecord != null
@@ -52,5 +47,4 @@ class ServiceProviderRecordSpec extends Specification {
         spRecord.spid == testSpid
         spRecord.logo == null
     }
-
 }
