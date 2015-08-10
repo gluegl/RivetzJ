@@ -1,8 +1,10 @@
 .gradle
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
+/.idea
 .DS_Store
 /build
 /captures
 /doc/images/
+/rivetz-lib/rivetz-lib.iml
+/rivetz-server/rivetz-server.iml
+/rivetz-test/rivetz-test.iml
