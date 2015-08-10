@@ -19,7 +19,8 @@ import android.content.pm.PackageManager;
 import android.os.RemoteException;
 
 import com.rivetz.lib.CoinUtils;
-import com.rivetz.lib.Instruction;
+import com.rivetz.lib.InstructionBuilder;
+import com.rivetz.lib.InstructionRecord;
 import com.rivetz.lib.KeyRecord;
 import com.rivetz.lib.RivetBase;
 import com.rivetz.lib.ServiceProviderRecord;
@@ -171,25 +172,6 @@ public class Rivet extends RivetBase {
         binder = new Binder(context, done);
     }
 
-    /**
-     * Pass the given instruction as is into the Rivet. This is used
-     * when the instruction needs to carry a signature from the Service Provider. When
-     * received by the rivet, the Service Provider Record will be loaded
-     * and attached.
-     * <p>
-     * If the Service Provider Record invoked with this instruction contains key identified
-     * with a UsageRule of SP_IDENTITY_KEY, then the result
-     * will be signed with this device key.
-     * @param instructionRecord binary formatted rivet instruction
-     * @return response record that contains the results of the instruction
-     */
-    @Override
-    public byte[] execute(byte[] instructionRecord) {
-        Instruction instruct = new Instruction(this,instructionRecord);
-        response = instruct.send();
-        status = response.status;
-        return response.payload;
-    }
 
     @Override
     public int getStatus() throws RemoteException {
@@ -197,18 +179,8 @@ public class Rivet extends RivetBase {
     }
 
     @Override
-    public byte[] getServiceProviderRecord(String spid) throws RemoteException {
-        return binder.api.getServiceProviderRecord(spid);
-    }
-
-    @Override
-    public byte[] execute(String spid, byte[] instruction) throws RemoteException {
+    protected byte[] execute(String spid, byte[] instruction) throws RemoteException {
         return binder.api.execute(spid, instruction);
-    }
-
-    @Override
-    public boolean isPaired(String spid) throws RemoteException {
-        return binder.api.isPaired(spid);
     }
 
     /**
@@ -221,11 +193,12 @@ public class Rivet extends RivetBase {
     @Override
     public KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_CREATEKEY);
-        instruct.addParam(RivetBase.EXTRA_KEYTYPE,type.getValue());
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,name);
-        instruct.addParam(RivetBase.EXTRA_USAGERULES,rules);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_CREATEKEY)
+                .addParam(RivetBase.EXTRA_KEYTYPE,type.getValue())
+                .addParam(RivetBase.EXTRA_KEYNAME,name)
+                .addParam(RivetBase.EXTRA_USAGERULES,rules)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null && response.spRecord != null) {
             String retKeyName = Utilities.extractString(response.payload,0);
@@ -247,13 +220,13 @@ public class Rivet extends RivetBase {
     @Override
     public KeyRecord addKey(String keyName, String publicData, String securedData, UsageRule...rules) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_CREATEKEY);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_PUBLICDATA,publicData);
-        instruct.addParam(RivetBase.EXTRA_SECUREDATA,securedData);
-        instruct.addParam(RivetBase.EXTRA_USAGERULES,rules);
-        instruct.send();
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_CREATEKEY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_PUBLICDATA,publicData)
+                .addParam(RivetBase.EXTRA_SECUREDATA,securedData)
+                .addParam(RivetBase.EXTRA_USAGERULES,rules)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null && response.spRecord != null) {
             String retKeyName = Utilities.extractString(response.payload,0);
@@ -271,9 +244,10 @@ public class Rivet extends RivetBase {
     @Override
     public void deleteKey(String keyName) {
         if (!isInitialized()) { return;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_DELETEKEY);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_DELETEKEY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
     }
 
@@ -289,10 +263,10 @@ public class Rivet extends RivetBase {
     @Override
     public KeyRecord getKey(String keyName) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_CREATEKEY);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.send();
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_CREATEKEY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.spRecord != null) {
             // todo: signature is only on result data of pub key
@@ -335,15 +309,15 @@ public class Rivet extends RivetBase {
     @Override
     public String signTxn(String keyName, String coin, String topub, String amount, String fee, String txn) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_SIGNTXN);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_COIN,coin);
-        instruct.addParam(RivetBase.EXTRA_TOPUB,topub);
-        instruct.addParam(RivetBase.EXTRA_AMT,amount);
-        instruct.addParam(RivetBase.EXTRA_FEE,fee);
-        instruct.addParam(RivetBase.EXTRA_TRANS, CoinUtils.getTransactionsFromJson(txn));
-        instruct.send();
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_SIGNTXN)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_COIN,coin)
+                .addParam(RivetBase.EXTRA_TOPUB, topub)
+                .addParam(RivetBase.EXTRA_AMT, amount)
+                .addParam(RivetBase.EXTRA_FEE, fee)
+                .addParam(RivetBase.EXTRA_TRANS, CoinUtils.getTransactionsFromJson(txn))
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             return Utilities.extractString(response.payload,0);
@@ -363,10 +337,11 @@ public class Rivet extends RivetBase {
     @Override
     public String sign(String keyName,byte[] payload) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_SIGN);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_PAYLOAD,payload);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_SIGN)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_PAYLOAD,payload)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             // this is the signature
@@ -380,10 +355,11 @@ public class Rivet extends RivetBase {
     @Override
     public Boolean verify(String keyName,String signature) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_VERIFY);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_SIGNATURE,signature);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_VERIFY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_SIGNATURE,signature)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             // response payload is keyname then verified boolean
@@ -399,10 +375,11 @@ public class Rivet extends RivetBase {
     @Override
     public String ecdhShared(String keyName,String topub) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_ECDH_SHARED);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_TOPUB,topub);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_ECDH_SHARED)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_TOPUB,topub)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             int offset = 0;
@@ -425,10 +402,11 @@ public class Rivet extends RivetBase {
     @Override
     public String hash(String hashAlgo,byte[] payload) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_HASH);
-        instruct.addParam(RivetBase.EXTRA_HASH_ALGO,hashAlgo);
-        instruct.addParam(RivetBase.EXTRA_PAYLOAD,payload);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_HASH)
+                .addParam(RivetBase.EXTRA_HASH_ALGO,hashAlgo)
+                .addParam(RivetBase.EXTRA_PAYLOAD,payload)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             // this is the hash
@@ -451,11 +429,12 @@ public class Rivet extends RivetBase {
     @Override
     public String AESEncrypt(String keyName, byte[] payload, boolean reverse) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this,reverse? RivetBase.INSTRUCT_AES_DECRYPT: RivetBase.INSTRUCT_AES_ENCRYPT);
-        instruct.addParam(RivetBase.EXTRA_STRING,"CBC");
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_PAYLOAD,payload);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this,reverse? RivetBase.INSTRUCT_AES_DECRYPT: RivetBase.INSTRUCT_AES_ENCRYPT)
+                .addParam(RivetBase.EXTRA_STRING,"CBC")
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_PAYLOAD,payload)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             // this is the result data
@@ -477,10 +456,11 @@ public class Rivet extends RivetBase {
     @Override
     public String getAddress(String keyName, String coin) {
         if (!isInitialized()) { return null;}
-        Instruction instruct = new Instruction(this, RivetBase.INSTRUCT_GETADDRESS);
-        instruct.addParam(RivetBase.EXTRA_KEYNAME,keyName);
-        instruct.addParam(RivetBase.EXTRA_COIN,coin);
-        response = instruct.send();
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_GETADDRESS)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_COIN,coin)
+                .prepareData();
+        response = send(instruct);
         status = response.status;
         if (response.payload != null) {
             // this is the address
@@ -489,10 +469,4 @@ public class Rivet extends RivetBase {
             return null;
         }
     }
-
-
-    /////////////////////////////////////////////////////////////////////////////////////////
-    // UTILITIES
-    /////////////////////////////////////////////////////////////////////////////////////////
-
 }

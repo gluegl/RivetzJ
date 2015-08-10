@@ -1,14 +1,14 @@
 package com.rivetz.lib;
 
 /**
- * Packages an instruction to be delivered to the Rivet
+ * Builds an InstructionRecord  for delivery to the Rivet
  */
-public class Instruction {
+public class InstructionBuilder {
     private int version = 1;
     private int mInstructionCode;
     protected byte[] mInstructionRecord;    // serialized instruction to send
     protected byte[] paramData;            // param data to wrap in instruction
-    private RivetBase mRivet;
+    private String spid;
 
     /**
      * Generate a new Instruction with the given instruction code. Use addParam to
@@ -16,8 +16,8 @@ public class Instruction {
      * @param rivet pointer to the Rivet instance for sending this instruction
      * @param instructionCode see Rivet.INSTRUCT_... for defined instruction codes
      */
-    public Instruction(RivetBase rivet, int instructionCode) {
-        mRivet = rivet;
+    public InstructionBuilder(RivetBase rivet, int instructionCode) {
+        spid = rivet.spid;
         mInstructionCode = instructionCode;
         paramData = new byte[0];
     }
@@ -27,19 +27,19 @@ public class Instruction {
      * @param rivet pointer to the Rivet instance for sending this instruction
      * @param instructionBytes serialized instruction record to parse into the class
      */
-    public Instruction(RivetBase rivet, byte[] instructionBytes) {
-        mRivet = rivet;
+    public InstructionBuilder(RivetBase rivet, byte[] instructionBytes) {
+        spid = rivet.spid;
         mInstructionRecord = instructionBytes;
     }
 
     /**
-     * Prepare the instruction as a byte array that can delivered to the mRivet.execute method
+     * Prepare the instruction as an InstructionRecord (which contains an immutable byte array)
      */
-    public void prepareData() {
+    public InstructionRecord prepareData() {
         // start with version code
         mInstructionRecord = Utilities.int2bytes(Utilities.uint16_t, version);
         // add SPID
-        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.hexToBytes(mRivet.spid));
+        mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.hexToBytes(spid));
         // add instruction code
         mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.int2bytes(Utilities.uint16_t, mInstructionCode));
         // add parameter data
@@ -47,32 +47,9 @@ public class Instruction {
         mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,paramData);
         // add empty signature
         mInstructionRecord = Utilities.bytesconcat(mInstructionRecord,Utilities.int2bytes(Utilities.uint16_t, 0));
-
+        return new InstructionRecord(mInstructionRecord);
     }
 
-    /**
-     * Sends the instruction to the mRivet.
-     *
-     * Instructions are built up by instantiating and instance with an instruction
-     * type and then adding parameter data, or by providing a fully prepared instruction
-     * record to the constructor.
-     * @return mRivet response data containing the original bytes and the parsed elements
-     */
-    public RivetResponse send() {
-        if (mInstructionRecord == null) {
-            prepareData();
-        }
-        try {
-            byte[] responseRecord = mRivet.execute(mRivet.spid, mInstructionRecord);
-            if (responseRecord == null || responseRecord.length == 0) {
-                return new RivetResponse(mRivet.getStatus());
-            } else {
-                return new RivetResponse(responseRecord);
-            }
-        } catch(Exception e) {
-            return new RivetResponse(RivetBase.ERROR_UNKNOWN);
-        }
-    }
 
     /**
      * Add a typed parameter to the instruction record.
@@ -88,8 +65,8 @@ public class Instruction {
      * @param extraId refer to the constants defined in Rivet for extraId types
      * @param value the value of the parameter typed according to the extraId
      */
-    public void addParam(String extraId, Object value) {
-        if (extraId == RivetBase.EXTRA_USAGERULES) {
+    public InstructionBuilder addParam(String extraId, Object value) {
+        if (extraId.equals(RivetBase.EXTRA_USAGERULES)) {
             RivetBase.UsageRule[] rules = (RivetBase.UsageRule[])value;
             paramData = Utilities.bytesconcat(paramData,Utilities.int2bytes(Utilities.uint16_t, rules.length));
             for (RivetBase.UsageRule rule : rules) {
@@ -120,5 +97,6 @@ public class Instruction {
         } else {
             // TODO: this indicates an error that should not be syntactically available
         }
+        return this;
     }
 }

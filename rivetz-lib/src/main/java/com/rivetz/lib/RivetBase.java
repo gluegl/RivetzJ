@@ -279,14 +279,51 @@ public abstract class RivetBase {
 
     abstract public void reconnect(Callable done);
 
-    abstract public byte[] execute(byte[] instructionRecord);
-
-    // These 4 methods correspond to IRivetzAPI.aidl
+    // These 2 methods correspond to IRivetzAPI.aidl
+    // and call through to the via the binder.
     abstract public int getStatus() throws Exception;
-    abstract public byte[] getServiceProviderRecord(String spid) throws Exception;
-    abstract public byte[] execute(String spid, byte[] instruction) throws Exception;
-    abstract public boolean isPaired(String spid) throws Exception;
+    abstract protected byte[] execute(String spid, byte[] instruction) throws Exception;
 
+
+    /**
+     * Pass the given instruction as is into the Rivet. This is used
+     * when the instruction needs to carry a signature from the Service Provider. When
+     * received by the rivet, the Service Provider Record will be loaded
+     * and attached.
+     * <p>
+     * If the Service Provider Record invoked with this instruction contains key identified
+     * with a UsageRule of SP_IDENTITY_KEY, then the result
+     * will be signed with this device key.
+     * @param instructionRecord binary formatted rivet instruction
+     * @return response record that contains the results of the instruction
+     */
+    public byte[] execute(byte[] instructionRecord) {
+        InstructionRecord instruct = new InstructionBuilder(this,instructionRecord).prepareData();
+        response = send(instruct);
+        status = response.status;
+        return response.payload;
+    }
+
+    /**
+     * Sends the instruction to the Rivet.
+     *
+     * Instructions are built up by instantiating an instance with an instruction
+     * type and then adding parameter data, or by providing a fully prepared instruction
+     * record to the constructor.
+     * @return mRivet response data containing the original bytes and the parsed elements
+     */
+    protected RivetResponse send(InstructionRecord instructionRecord) {
+        try {
+            byte[] responseRecord = execute(spid, instructionRecord.getBytes());
+            if (responseRecord == null || responseRecord.length == 0) {
+                return new RivetResponse(getStatus());
+            } else {
+                return new RivetResponse(responseRecord);
+            }
+        } catch(Exception e) {
+            return new RivetResponse(RivetBase.ERROR_UNKNOWN);
+        }
+    }
 
     /**
      * Generate a riveted key. The key name will be randomly generated and can be

@@ -65,18 +65,8 @@ public class RivetSimulator extends RivetBase {
     }
 
     @Override
-    public byte[] getServiceProviderRecord(String spid) throws Exception {
-        return new byte[0];
-    }
-
-    @Override
     public byte[] execute(String spid, byte[] instruction) throws Exception {
         return new byte[0];
-    }
-
-    @Override
-    public boolean isPaired(String spid) throws Exception {
-        return true;
     }
 
     @Override
