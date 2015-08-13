@@ -10,7 +10,7 @@ public class InstructionRecord {
      * Don't use this, use InstructionBuilder to create
      * @param instructionBytes
      */
-    public InstructionRecord(byte[] instructionBytes) {
+    public InstructionRecord(final byte[] instructionBytes) {
         this.instructionBytes = instructionBytes;
     }
 

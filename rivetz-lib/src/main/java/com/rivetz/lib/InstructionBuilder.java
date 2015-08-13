@@ -26,7 +26,9 @@ public class InstructionBuilder {
      * Parse the given byte array into an instruction object.
      * @param rivet pointer to the Rivet instance for sending this instruction
      * @param instructionBytes serialized instruction record to parse into the class
+     * @deprecated use {@link InstructionRecord#InstructionRecord(byte[])} instead
      */
+    @Deprecated
     public InstructionBuilder(RivetBase rivet, byte[] instructionBytes) {
         spid = rivet.spid;
         mInstructionRecord = instructionBytes;

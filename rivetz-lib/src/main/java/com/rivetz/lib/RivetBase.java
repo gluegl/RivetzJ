@@ -294,11 +294,11 @@ public abstract class RivetBase {
      * If the Service Provider Record invoked with this instruction contains key identified
      * with a UsageRule of SP_IDENTITY_KEY, then the result
      * will be signed with this device key.
-     * @param instructionRecord binary formatted rivet instruction
+     * @param instructionBytes binary formatted rivet instruction
      * @return response record that contains the results of the instruction
      */
-    public byte[] execute(byte[] instructionRecord) {
-        InstructionRecord instruct = new InstructionBuilder(this,instructionRecord).prepareData();
+    public byte[] execute(final byte[] instructionBytes) {
+        InstructionRecord instruct = new InstructionRecord(instructionBytes);
         response = send(instruct);
         status = response.status;
         return response.payload;
