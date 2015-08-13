@@ -335,8 +335,6 @@ public abstract class RivetBase {
         return(createKey(type, Utilities.generateName()));
     }
 
-    abstract public KeyRecord createKey(KeyType type, String name, UsageRule... rules);
-
     /**
      * Insert a key into the Rivet
      * @param publicData public portion of the key in hex format
@@ -348,33 +346,242 @@ public abstract class RivetBase {
         return(addKey(Utilities.generateName(),publicData,securedData,rules ));
     }
 
-    abstract public KeyRecord addKey(String keyName, String publicData, String securedData, UsageRule... rules);
+    /**
+     * Generate a riveted key
+     * @param type indicates the type of the key
+     * @param name provides a name for the key which is used to reference it in future calls.
+     * @param rules Zero or more usage rules that will be added to the riveted key
+     * @return a new KeyRecord or null if there is an error
+     */
+    public KeyRecord createKey(KeyType type, String name, UsageRule...rules) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_CREATEKEY)
+                .addParam(RivetBase.EXTRA_KEYTYPE,type.getValue())
+                .addParam(RivetBase.EXTRA_KEYNAME,name)
+                .addParam(RivetBase.EXTRA_USAGERULES,rules)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null && response.spRecord != null) {
+            String retKeyName = Utilities.extractString(response.payload,0);
+            // todo: signature is only on result data of name
+            return response.spRecord.getKey(retKeyName);
+        } else {
+            return null;
+        }
+    }
 
-    abstract public void deleteKey(String keyName);
+    /**
+     * Insert a key into the Rivet
+     * @param keyName specifies a name for the key
+     * @param publicData public portion of the key in hex format
+     * @param securedData private portion of the key in hex format
+     * @param rules Zero or more usage rules that will be added to the riveted key
+     * @return
+     */
+    public KeyRecord addKey(String keyName, String publicData, String securedData, UsageRule...rules) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_CREATEKEY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_PUBLICDATA,publicData)
+                .addParam(RivetBase.EXTRA_SECUREDATA,securedData)
+                .addParam(RivetBase.EXTRA_USAGERULES,rules)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null && response.spRecord != null) {
+            String retKeyName = Utilities.extractString(response.payload,0);
+            // todo: signature is only on result data of name
+            return response.spRecord.getKey(retKeyName);
+        } else {
+            return null;
+        }
+    }
 
-    abstract public KeyRecord getKey(String keyName);
+    /**
+     * Remove the named key from the service provider record
+     * @param keyName name of key to delete
+     */
+    public void deleteKey(String keyName) {
+        if (!isInitialized()) { return;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_DELETEKEY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+    }
+
+    /**
+     * Fetches the specified key. If there is a device identity key then this
+     * response will be signed and can be fetched from RivetResponse
+     * <p>
+     * If a signature is not needed one can simply examine the Keys list in the
+     * ServiceProviderRecord class
+     * @param keyName The name assigned to the key
+     * @return a key record or null if none found
+     */
+    public KeyRecord getKey(String keyName) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_CREATEKEY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.spRecord != null) {
+            // todo: signature is only on result data of pub key
+            return response.spRecord.getKey(keyName);
+        } else {
+            return null;
+        }
+    }
 
     abstract public ArrayList<KeyRecord> getKeys();
 
-    abstract public String signTxn(String keyName, String coin, String topub, String amount, String fee, String txn);
+    /**
+     * SIGNTXN
+     *
+     * Sign a bitcoin transaction
+     *
+     */
+    public String signTxn(String keyName, String coin, String topub, String amount, String fee, String txn) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_SIGNTXN)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_COIN,coin)
+                .addParam(RivetBase.EXTRA_TOPUB, topub)
+                .addParam(RivetBase.EXTRA_AMT, amount)
+                .addParam(RivetBase.EXTRA_FEE, fee)
+                .addParam(RivetBase.EXTRA_TRANS, CoinUtils.getTransactionsFromJson(txn))
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            return Utilities.extractString(response.payload,0);
+            // second return parameter is key name and is ignored here
+        } else {
+            return null;
+        }
+    }
 
-    abstract public String sign(String keyName, byte[] payload);
+    /**
+     * SIGN - returns the given blob signed with the named key
+     *
+     * @param keyName
+     * @param payload
+     * @return
+     */
+    public String sign(String keyName,byte[] payload) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_SIGN)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_PAYLOAD,payload)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            // this is the signature
+            return Utilities.extractString(response.payload,0);
+            // second return parameter is key name and is ignored here
+        } else {
+            return null;
+        }
+    }
 
     public String sign(String name, String payload) {
         return sign(name,payload.getBytes());
     }
 
-    abstract public Boolean verify(String keyName, String signature);
+    public Boolean verify(String keyName,String signature) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_VERIFY)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_SIGNATURE,signature)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            // response payload is keyname then verified boolean
+            int offset = 0;
+            String retKeyName = Utilities.extractString(response.payload,offset);
+            offset += keyName.length()+Utilities.uint16_t;
+            return response.payload[offset]!=0;
+        } else {
+            return false;
+        }
+    }
 
-    abstract public String ecdhShared(String keyName, String topub);
+    public String ecdhShared(String keyName,String topub) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_ECDH_SHARED)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_TOPUB,topub)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            int offset = 0;
+            // result is keyname followed by shared key
+            String retKeyName = Utilities.extractString(response.payload,offset);
+            offset+= keyName.length()+Utilities.uint16_t;
+            return Utilities.extractString(response.payload,offset);
+        } else {
+            return null;
+        }
+    }
 
-    abstract public String hash(String hashAlgo, byte[] payload);
+    /**
+     * HASH - Perform a hash on the given payload
+     *
+     * @param hashAlgo algorithm to be used
+     * @param payload payload as byte array or string
+     * @return hash string
+     */
+    public String hash(String hashAlgo,byte[] payload) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_HASH)
+                .addParam(RivetBase.EXTRA_HASH_ALGO,hashAlgo)
+                .addParam(RivetBase.EXTRA_PAYLOAD,payload)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            // this is the hash
+            return Utilities.extractString(response.payload,0);
+        } else {
+            return null;
+        }
+    }
 
     public String hash(String hashAlgo, String payload) {
         return hash(hashAlgo,payload.getBytes());
     }
 
-    abstract public String AESEncrypt(String keyName, byte[] payload, boolean reverse);
+    /**
+     * AES Encrypt
+     *
+     * Given a key name to use and payload to work on encrypt or decrypt depending
+     * on the value of reverse
+     * @param keyName name of the key to use
+     * @param payload the data to encrypt/descrypt as a byte array or string
+     * @param reverse if true then descrypt
+     * @return encrypted/decrypted payload
+     */
+    public String AESEncrypt(String keyName, byte[] payload, boolean reverse) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this,reverse? RivetBase.INSTRUCT_AES_DECRYPT: RivetBase.INSTRUCT_AES_ENCRYPT)
+                .addParam(RivetBase.EXTRA_STRING,"CBC")
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_PAYLOAD,payload)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            // this is the result data
+            return Utilities.extractString(response.payload,0);
+        } else {
+            return null;
+        }
+    }
 
     public String AESEncrypt(String keyName, byte[] payload) {
         return AESEncrypt(keyName,payload,false);
@@ -392,7 +599,30 @@ public abstract class RivetBase {
         return AESEncrypt(keyName,payload.getBytes(),true);
     }
 
-    abstract public String getAddress(String keyName, String coin);
+    /**
+     * GETADDRESSS
+     *
+     * return the key address formatted for the given coin type
+     *
+     * @param keyName the key to use
+     * @param coin defaults to "BTC"
+     * @return coin address
+     */
+    public String getAddress(String keyName, String coin) {
+        if (!isInitialized()) { return null;}
+        InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_GETADDRESS)
+                .addParam(RivetBase.EXTRA_KEYNAME,keyName)
+                .addParam(RivetBase.EXTRA_COIN,coin)
+                .prepareData();
+        response = send(instruct);
+        status = response.status;
+        if (response.payload != null) {
+            // this is the address
+            return Utilities.extractString(response.payload,0);
+        } else {
+            return null;
+        }
+    }
 
     public String getAddress(String keyName) {
         return getAddress(keyName,"BTC");
