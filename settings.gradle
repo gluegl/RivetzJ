@@ -1,1 +1,1 @@
-include ':app', ':rivetz-lib', ':rivetz-test', ':rivetz-server'
+include ':app', ':rivetz-lib', ':rivetz-test' //, ':rivetz-server'
