@@ -5,7 +5,4 @@
 /build
 /captures
 /doc/images/
-/app/app.iml
-/rivetz-lib/rivetz-lib.iml
-/rivetz-server/rivetz-server.iml
-/rivetz-test/rivetz-test.iml
+/*/*.iml
