@@ -168,6 +168,13 @@ public final class Utilities {
     public static int extractInt(byte[] bytes, int offset, int type) {
         return bytes2int(bytesofbytes(bytes, offset, type), type);
     }
+
+    public static byte[] extractBytes(byte[] bytes, int offset) {
+        int length = bytes2int(bytesofbytes(bytes, offset, uint16_t), uint16_t);
+        offset += uint16_t;
+        return bytesofbytes(bytes, offset, length);
+    }
+
     public static String extractString(byte[] bytes, int offset) {
         if (bytes.length < uint16_t) {
             return "";

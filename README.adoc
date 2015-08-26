@@ -64,6 +64,11 @@ To build it:
 
 A small amount of UML documentation will be built into the file `./build/adoc/rivet.html`
 
+=== Release to BinTray
+
+    ./gradlew bintrayUpload
+
+
 
 
 
