@@ -15,7 +15,7 @@ public class AndroidUtilities {
      * @param imageBytes byte array containing a raw PNG bitmap image
      * @return Bitmap
      */
-    public Bitmap getLogoBmp(byte[] imageBytes) {
+    public static Bitmap getLogoBmp(byte[] imageBytes) {
         Bitmap   logoBmp = BitmapFactory.decodeByteArray(imageBytes, 0, imageBytes.length);
         return logoBmp;
     }

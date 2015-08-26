@@ -198,7 +198,6 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
             String logoString = json.getString("logo");
             // logo = Base64.decode(logoString,Base64.DEFAULT); // android.util version
             logo = Base64.decodeBase64(logoString);
-            logo = null;
 		} catch(JSONException e) {
             log.error("JSON Parse error of ServiceProviderRecord");
 			name="";
