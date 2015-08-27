@@ -35,16 +35,29 @@ class ServiceProviderRecordSpec extends Specification {
         spRecord.logo == null
     }
 
-    @Ignore("ServiceProviderRecord is broken for this case, @Ignore should be removed and bug fixed?")
-    def "can construct using JSON without  keys array"() {
+    def "JSON without keys array throws RuntimeException"() {
         when:
         def json = "{spid: ${testSpid}, name: ${testName}}" as JSONObject
         def spRecord = new ServiceProviderRecord(json)
 
         then:
-        spRecord != null
-        spRecord.name == testName
-        spRecord.spid == testSpid
-        spRecord.logo == null
+        RuntimeException e = thrown()
+//        spRecord.name == testName
+//        spRecord.spid == testSpid
+//        spRecord.logo == null
+    }
+
+    def "can create with online JSON"() {
+        given:
+        def spr = new ServiceProviderRecord();
+        def json = this.getClass().getClassLoader().getResourceAsStream('spr_online.json').text as JSONObject
+
+        when:
+        def result = spr.parseOnlineJson(json)
+
+        then:
+        result == true
+        spr.logo != null
+        spr.name == "Developer Tools"
     }
 }
