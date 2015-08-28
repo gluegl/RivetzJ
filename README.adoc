@@ -6,12 +6,12 @@ See https://epistery.com/do/view/Main/RivetzStub[RivetzStub on the wiki] for dep
 
 == Modules
 
-We're in the middle of some refactoring. Not all these modules are fully-fleshed out, but this is the direction we're going:
+We're in the middle of some refactoring. Not all these modules are complete and the API is subject to change. There are currently 4 modules:
 
-* `app` - this is currently the `rivetz-bridge` AAR android library (moudule will be renamed)
-* `rivetz-lib` - the core Rivetz Java library
+* `rivetz-bridge` - Rivetz Android library (`.aar` extension)
+* `rivetz-lib` - Rivetz main Java library (`.jar` extension)
 * `rivetz-test` - contains the `RivetSimulator` and other components for testing
-* `rivetz-server` - a demonstration Rivetz server built using http://projects.spring.io/spring-boot/[Spring Boot]
+* `rivetz-server` - demonstration Rivetz server built using http://projects.spring.io/spring-boot/[Spring Boot]
 
 == Building with Gradle
 
