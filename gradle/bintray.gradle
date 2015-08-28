@@ -5,7 +5,6 @@ subprojects {
 
     ext {
         dry = false // dryRun flag for bintray (and anything else?)
-        myBintray = [ apiKey: binTrayAPIKey ]   // Set 'binTrayAPIKey' in ~/.gradle/gradle.properties
     }
 
 //    publishing {
@@ -17,8 +16,8 @@ subprojects {
 //    }
 
     bintray {
-        user = 'msgilligan'
-        key = myBintray.apiKey
+        user = project.hasProperty("binTrayAPIUser") ? binTrayAPIUser : 'please set binTrayAPIUser'
+        key = project.hasProperty("binTrayAPIKey") ? binTrayAPIKey : 'please set binTrayAPIKey'
         dryRun = dry // whether to run this as dry-run, without deploying
 //        publications = ['jar'] // When uploading Maven-based publication files
         configurations = ['archives']
