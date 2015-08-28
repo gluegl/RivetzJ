@@ -2,12 +2,12 @@ apply plugin: 'com.android.library'
 //apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 21
+    compileSdkVersion 23
     buildToolsVersion "21.1.2"
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 22
+        targetSdkVersion 23
         versionCode 1
         versionName "1.0"
     }
@@ -24,7 +24,7 @@ android {
 
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
-    compile 'com.android.support:appcompat-v7:22.1.0'
+    compile 'com.android.support:appcompat-v7:23.0.0'
     compile 'org.slf4j:slf4j-api:1.7.7'
 
     compile project(':rivetz-lib')
