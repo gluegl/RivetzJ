@@ -26,6 +26,13 @@ This should produce the following outputs:
 * `app/build/outputs/aar/app-debug.aar`
 * `app/build/outputs/aar/app-release.aar`
 
+==== Viewing Unit Test results
+
+For now only `rivetz-lib` and `rivetz-test` have any unit tests. To view the results after a build, open the following files:
+
+* `rivetz-lib/build/reports/tests/index.html`
+* `rivetz-test/build/reports/tests/index.html`
+
 === Running the Server from Gradle
 
 To run the Rivetz Demo Server using Spring Boot
@@ -56,6 +63,11 @@ To build it:
     ./gradlew asciidoctor
 
 A small amount of UML documentation will be built into the file `./build/adoc/rivet.html`
+
+=== Release to BinTray
+
+    ./gradlew bintrayUpload
+
 
 
 

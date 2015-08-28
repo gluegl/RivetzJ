@@ -1,0 +1,43 @@
+subprojects {
+    apply plugin: 'com.jfrog.bintray'
+    apply plugin: 'maven'
+//    apply plugin: 'maven-publish'
+
+    ext {
+        dry = false // dryRun flag for bintray (and anything else?)
+        myBintray = [ apiKey: binTrayAPIKey ]   // Set 'binTrayAPIKey' in ~/.gradle/gradle.properties
+    }
+
+//    publishing {
+//        publications {
+//            jar(MavenPublication) {
+//                from components.java
+//            }
+//        }
+//    }
+
+    bintray {
+        user = 'msgilligan'
+        key = myBintray.apiKey
+        dryRun = dry // whether to run this as dry-run, without deploying
+//        publications = ['jar'] // When uploading Maven-based publication files
+        configurations = ['archives']
+        pkg {
+            repo = 'maven'
+            userOrg = 'rivetz'
+            name = 'rivetz'
+            desc = 'Rivetz Java and Android libraries'
+            websiteUrl = 'https://github.com/rivetz'
+            issueTrackerUrl = 'https://github.com/rivetz/RivetzStub/issues'
+            vcsUrl = 'https://github.com/rivetz/RivetzStub.git'
+            licenses = ['AGPL-V3']  // license not decided yet
+            labels = ['rivetz', 'tee', 'bitcoin']
+            version {
+                name = '0.1'
+                desc = 'Test release.'
+                released  = new Date()
+                vcsTag = 'none-beware'
+            }
+        }
+    }
+}
