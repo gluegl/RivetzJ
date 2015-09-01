@@ -20,6 +20,11 @@ android {
             minifyEnabled false
         }
     }
+
+    configurations {
+        all*.exclude group: 'org.json', module: 'json'
+    }
+
 }
 
 dependencies {
@@ -28,5 +33,4 @@ dependencies {
     compile 'org.slf4j:slf4j-api:1.7.7'
 
     compile project(':rivetz-lib')
-
 }
