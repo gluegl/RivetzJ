@@ -89,7 +89,7 @@ public abstract class RivetBase {
     public static final String EXTRA_HEXSTRING	= EXTRATYPE_HEXSTRING +"_EXTRA_HEXSTRING";
     public static final String EXTRA_BLOB		= EXTRATYPE_BYTES +"_EXTRA_BLOB";
     public static final String EXTRA_PAYLOAD	= EXTRATYPE_BYTES +"_EXTRA_PAYLOAD";
-    public static final String EXTRA_SIGNATURE	= EXTRATYPE_STRING +"_EXTRA_SIGNATURE";
+    public static final String EXTRA_SIGNATURE	= EXTRATYPE_HEXSTRING +"_EXTRA_SIGNATURE";
     public static final String EXTRA_RESULTDATA = EXTRATYPE_BYTES +"_EXTRA_RESULTDATA";
     public static final String EXTRA_VERIFIED	= EXTRATYPE_BOOLEAN +"_EXTRA_VERIFIED";
     public static final String EXTRA_SHAREDKEY	= EXTRATYPE_STRING +"_EXTRA_SHAREDKEY";
