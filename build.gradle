@@ -21,7 +21,7 @@ apply from: 'gradle/asciidoctor.gradle'
 apply from: 'gradle/bintray.gradle'
 
 allprojects {
-    version =  '0.0.5'
+    version =  '0.0.6-SNAPSHOT'
     group = 'com.rivetz'
 
     repositories {
