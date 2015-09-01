@@ -470,7 +470,7 @@ public abstract class RivetBase {
      * @param payload
      * @return
      */
-    public String sign(String keyName,byte[] payload) {
+    public byte[] sign(String keyName,byte[] payload) {
         if (!isInitialized()) { return null;}
         InstructionRecord instruct = new InstructionBuilder(this, RivetBase.INSTRUCT_SIGN)
                 .addParam(RivetBase.EXTRA_KEYNAME,keyName)
@@ -480,14 +480,14 @@ public abstract class RivetBase {
         status = response.status;
         if (response.payload != null) {
             // this is the signature
-            return Utilities.extractString(response.payload,0);
+            return response.payload;
             // second return parameter is key name and is ignored here
         } else {
             return null;
         }
     }
 
-    public String sign(String name, String payload) {
+    public byte[] sign(String name, String payload) {
         return sign(name,payload.getBytes());
     }
 

@@ -62,8 +62,7 @@ class RivetSimulatorSpec extends Specification {
         and: "we create a check signature using bitcoinj"
         def key = ECKey.fromPrivate(keyrec.privateKey)
         def hash = Sha256Hash.of(cleartext.getBytes())
-        def binSig = key.sign(hash).encodeToDER()
-        def checkSig = Utilities.bytesToHex(binSig)
+        def checkSig = key.sign(hash).encodeToDER()
 
         then: "the signature matches"
         sig == checkSig

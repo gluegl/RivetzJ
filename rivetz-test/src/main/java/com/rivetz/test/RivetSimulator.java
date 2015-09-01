@@ -142,7 +142,7 @@ public class RivetSimulator extends RivetBase {
     // TODO: I'm not sure exactly what this should do, nor if I'm doing it right
     // Also what is the difference between ECDSA_DFLT and BITCOIN_DFLT?
     @Override
-    public String sign(String keyName, byte[] payload) {
+    public byte[] sign(String keyName, byte[] payload) {
         KeyRecord keyrec = keyMap.get(keyName);
         ECKey key = ECKey.fromPrivate(keyrec.privateKey);
         Sha256Hash hash;
@@ -169,8 +169,7 @@ public class RivetSimulator extends RivetBase {
             default:
                 throw new IllegalArgumentException("unsupported key type");
         }
-        String sig = Utilities.bytesToHex(binSig);
-        return sig;
+        return binSig;
     }
 
     /**
