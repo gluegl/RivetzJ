@@ -33,13 +33,63 @@ For now only `rivetz-lib` and `rivetz-test` have any unit tests. To view the res
 * `rivetz-lib/build/reports/tests/index.html`
 * `rivetz-test/build/reports/tests/index.html`
 
+==== Publishing Artifacts to your local Maven Repo
+
+If you are making changes to RivetzJ and want to use and/or test them in another project, you should set a snapshot `version` property the root `build.gradle`, as shown:
+
+[source,groovy]
+-------
+    allprojects {
+        version =  '0.0.6-SNAPSHOT' // <1>
+        group = 'com.rivetz'
+        // <2>
+    }
+-------
+<1> Add the `-SNAPSHOT` suffix to the `version` property.
+<2> Other lines of configuration go here and were omitted for this example.
+
+Update the declared dependencies in your dependent projects to use the same `-SNAPSHOT` version and make sure they include the `mavenLocal()` repository in the `repositories` config block, as shown:
+
+[source,groovy]
+-------
+    repositories {
+        mavenLocal()    // <1>
+        // <2>
+    }
+-------
+<1> Search the local Maven repository for artifacts, including snapshots.
+<2> Other lines of configuration go here and were omitted for this example.
+
+[source,groovy]
+-------
+dependencies {
+    compile 'com.rivetz:rivetz-bridge:0.0.6-SNAPSHOT@aar'    // Rivetz Android Library
+    compile 'com.rivetz:rivetz-lib:0.0.6-SNAPSHOT'           // Rivetz Core Java Library
+        // <1>
+}
+-------
+<1> Other dependency lines go here and were omitted for this example.
+
+To publish your snapshot release of RivetzJ to your local maven repository (Typically in `~/.m2/` on UNIX systems) use the following Gradle command:
+
+    ./gradlew install
+
+If the version is `0.0.6-SNAPSHOT` you should then see the following files published to your local Maven repository:
+
+-------
+~/.m2/repository/com/rivetz/rivetz-bridge/0.0.6-SNAPSHOT/rivetz-bridge-0.0.6-SNAPSHOT.aar
+~/.m2/repository/com/rivetz/rivetz-lib/0.0.6-SNAPSHOT/rivetz-lib-0.0.6-SNAPSHOT.jar
+~/.m2/repository/com/rivetz/rivetz-test/0.0.6-SNAPSHOT/rivetz-test-0.0.6-SNAPSHOT.jar
+-------
+
+
 === Running the Server from Gradle
 
-To run the Rivetz Demo Server using Spring Boot
+To run the Rivetz Demo Server using Spring Boot:
 
     ./gradlew :rivetz-server:bootRun
 
-At this point the server is only a "hello world"-style server. To test that it is running open http://localhost:8080/hello
+At this point the server is only a "hello world"-style server. To test it, open: http://localhost:8080/hello
 
 === Building the Server
 
@@ -55,8 +105,7 @@ To run the server use:
 
 Although most documentation is on the website and wiki, there is some documentation directly in the source repo. 
 
-NOTE::
-This part of the build requires that the http://www.graphviz.org/Download.php[GraphViz] command-line tool be installed.
+NOTE: This part of the build requires that the http://www.graphviz.org/Download.php[GraphViz] command-line tool be installed.
 
 To build it:
 
