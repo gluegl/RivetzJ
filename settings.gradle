@@ -1,1 +1,1 @@
-include ':rivetz-bridge', ':rivetz-lib', ':rivetz-test' //, ':rivetz-server'
+include ':rivetz-bridge', ':rivetz-lib', ':rivetz-test', ':rivetz-server'

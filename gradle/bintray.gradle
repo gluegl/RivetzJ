@@ -32,7 +32,7 @@ subprojects {
             licenses = ['AGPL-V3']  // license not decided yet
             labels = ['rivetz', 'tee', 'bitcoin']
             version {
-                name = '0.1'
+                name = rivetzVersion
                 desc = 'Test release.'
                 released  = new Date()
                 vcsTag = 'none-beware'

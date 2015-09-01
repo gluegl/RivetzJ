@@ -17,11 +17,13 @@ buildscript {
     }
 }
 
+ext.rivetzVersion = '0.0.6'
+
 apply from: 'gradle/asciidoctor.gradle'
 apply from: 'gradle/bintray.gradle'
 
 allprojects {
-    version =  '0.0.6-SNAPSHOT'
+    version =  rivetzVersion
     group = 'com.rivetz'
 
     repositories {
