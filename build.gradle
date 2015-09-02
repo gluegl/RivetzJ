@@ -17,8 +17,6 @@ buildscript {
     }
 }
 
-ext.rivetzVersion = '0.0.7-SNAPSHOT'
-
 apply from: 'gradle/asciidoctor.gradle'
 apply from: 'gradle/bintray.gradle'
 

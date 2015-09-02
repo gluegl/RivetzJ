@@ -32,18 +32,11 @@ For now only `rivetz-lib` and `rivetz-test` have any unit tests. To view the res
 
 ==== Publishing Artifacts to your local Maven Repo
 
-If you are making changes to RivetzJ and want to use and/or test them in another project, you should set a snapshot `version` property the root `build.gradle`, as shown:
+If you are making changes to RivetzJ and want to use and/or test them in another project, you should set a snapshot `rivetzVersion` property in `gradle.properties`, as shown:
 
-[source,groovy]
 -------
-    allprojects {
-        version =  '0.0.7-SNAPSHOT' // <1>
-        group = 'com.rivetz'
-        // <2>
-    }
+rivetzVersion = '0.0.7-SNAPSHOT'
 -------
-<1> Add the `-SNAPSHOT` suffix to the `version` property.
-<2> Other lines of configuration go here and were omitted for this example.
 
 Update the declared dependencies in your dependent projects to use the same `-SNAPSHOT` version and make sure they include the `mavenLocal()` repository in the `repositories` config block, as shown:
 
