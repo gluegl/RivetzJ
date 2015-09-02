@@ -3,10 +3,6 @@ subprojects {
     apply plugin: 'maven'
 //    apply plugin: 'maven-publish'
 
-    ext {
-        dry = false // dryRun flag for bintray (and anything else?)
-    }
-
 //    publishing {
 //        publications {
 //            jar(MavenPublication) {
@@ -18,7 +14,7 @@ subprojects {
     bintray {
         user = project.hasProperty("binTrayAPIUser") ? binTrayAPIUser : 'please set binTrayAPIUser'
         key = project.hasProperty("binTrayAPIKey") ? binTrayAPIKey : 'please set binTrayAPIKey'
-        dryRun = dry // whether to run this as dry-run, without deploying
+        dryRun = false // whether to run this as dry-run, without deploying
 //        publications = ['jar'] // When uploading Maven-based publication files
         configurations = ['archives']
         pkg {
