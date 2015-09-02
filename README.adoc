@@ -21,10 +21,7 @@ To do a full build with Gradle
 
     ./gradlew clean build
 
-This should produce the following outputs:
-
-* `app/build/outputs/aar/app-debug.aar`
-* `app/build/outputs/aar/app-release.aar`
+This should build each of the modules producing outputs in their respective `build` directories.
 
 ==== Viewing Unit Test results
 
@@ -40,7 +37,7 @@ If you are making changes to RivetzJ and want to use and/or test them in another
 [source,groovy]
 -------
     allprojects {
-        version =  '0.0.6-SNAPSHOT' // <1>
+        version =  '0.0.7-SNAPSHOT' // <1>
         group = 'com.rivetz'
         // <2>
     }
@@ -63,8 +60,8 @@ Update the declared dependencies in your dependent projects to use the same `-SN
 [source,groovy]
 -------
 dependencies {
-    compile 'com.rivetz:rivetz-bridge:0.0.6-SNAPSHOT@aar'    // Rivetz Android Library
-    compile 'com.rivetz:rivetz-lib:0.0.6-SNAPSHOT'           // Rivetz Core Java Library
+    compile 'com.rivetz:rivetz-bridge:0.0.7-SNAPSHOT@aar'    // Rivetz Android Library
+    compile 'com.rivetz:rivetz-lib:0.0.7-SNAPSHOT'           // Rivetz Core Java Library
         // <1>
 }
 -------
@@ -74,12 +71,12 @@ To publish your snapshot release of RivetzJ to your local maven repository (Typi
 
     ./gradlew install
 
-If the version is `0.0.6-SNAPSHOT` you should then see the following files published to your local Maven repository:
+If the version is `0.0.7-SNAPSHOT` you should then see the following files published to your local Maven repository:
 
 -------
-~/.m2/repository/com/rivetz/rivetz-bridge/0.0.6-SNAPSHOT/rivetz-bridge-0.0.6-SNAPSHOT.aar
-~/.m2/repository/com/rivetz/rivetz-lib/0.0.6-SNAPSHOT/rivetz-lib-0.0.6-SNAPSHOT.jar
-~/.m2/repository/com/rivetz/rivetz-test/0.0.6-SNAPSHOT/rivetz-test-0.0.6-SNAPSHOT.jar
+~/.m2/repository/com/rivetz/rivetz-bridge/0.0.7-SNAPSHOT/rivetz-bridge-0.0.7-SNAPSHOT.aar
+~/.m2/repository/com/rivetz/rivetz-lib/0.0.7-SNAPSHOT/rivetz-lib-0.0.7-SNAPSHOT.jar
+~/.m2/repository/com/rivetz/rivetz-test/0.0.7-SNAPSHOT/rivetz-test-0.0.7-SNAPSHOT.jar
 -------
 
 
