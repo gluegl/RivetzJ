@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
 import java.util.ArrayList;
 
 
@@ -281,5 +282,25 @@ public class KeyRecord {		// https://epistery.com/do/view/Main/KeyRecord
         }
     }
 
+    /**
+     * Format an identity string derived from the public key.
+     * This is used for keys with the Usage Rule DEV_IDENTITY_KEY
+     * and follows Rivetz formatting specs
+     * @return 33 byte string in hex format
+     */
+    public String formatId() {
+        try {
+            // version 1 and key type ECDSA (3)
+            byte header[] = {0x00, 0x01, 0x00, 0x03};
+            byte base[] = Utilities.bytesconcat(header, publicKey);
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            byte hash[] = md.digest(base);
+            String typeId = "01"; // device id type indicator
+            String id = typeId + Utilities.bytesToHex(hash);
+            return id;
+        } catch(Exception e) {
+            return null;
+        }
+    }
 }
 

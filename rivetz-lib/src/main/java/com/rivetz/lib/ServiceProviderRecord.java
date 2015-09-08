@@ -463,13 +463,20 @@ public class ServiceProviderRecord {	// https://epistery.com/do/view/Main/Servic
         return null;
     }
 
-    public String getDeviceId() {
-        KeyRecord idKey = getKey("_DEVIDKEY");
-        if (idKey != null) {
-            // TODO: TEMP! implement rivetz id key format.
-            return Base64.encodeToString(idKey.publicKey,Base64.URL_SAFE|Base64.NO_PADDING|Base64.NO_WRAP).substring(0,64);
-        } else {
-            return null;
+    /**
+     * Return the KeyRecord marked as the device identity key
+     * for this Service Provider Record with UsageRule.DEV_IDENTITY_KEY.
+     * There can only be one.
+     * @return keyRecord or null If no device identity key has been declared
+     */
+    public KeyRecord getIdKey() {
+        if (keys != null) {
+            for (KeyRecord key : keys) {
+                if (key.hasRule(RivetBase.UsageRule.DEV_IDENTITY_KEY)) {
+                    return key;
+                }
+            }
         }
+        return null;
     }
 }
