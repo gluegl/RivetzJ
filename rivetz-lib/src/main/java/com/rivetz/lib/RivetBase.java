@@ -130,10 +130,16 @@ public abstract class RivetBase {
     public static final int ERROR_MISSING_PARAMETER     =  0x00000029; // A required parameter is missing
     public static final int ERROR_KEYNAME_EXISTS        =  0x0000002A; // KEYNAME already exists when adding or creating a key
     public static final int ERROR_KEYNAME_NOTFOUND      =  0x0000002C; // KEYNAME not found
+    public static final int ERROR_DEVICEID_NOTFOUND     =  0x0000002D; // SPR doesnt have a _DEVICEID record
     public static final int ERROR_LOADING_TA            =  0x00000030; // Error while loading the TA binary
     public static final int ERROR_OPEN_TA               =  0x00000032; // Error opening TA binary
     public static final int ERROR_VERSION_ERROR         =  0x00000050; // Calling TA Version function failed to return result
     public static final int ERROR_CORRUPT_SP_RCRD       =  0x00000051; // The serivice provider record signature could not be verified.
+    public static final int ERROR_SPID_ALREADY_PAIRED   =  0x00000052; // Attempt to pair a spid that is already paired
+    public static final int ERROR_NETWORK_UNAVAILABLE   =  0x00000053; // Unable to connect to network resources
+    public static final int ERROR_REGISTER_SP_FAILED    =  0x00000054; // registration of the SPR was rejected by TA
+    public static final int ERROR_REGISTER_DEV_FAILED   =  0x00000055; // registration of the device was rejected by RivetzNet
+    public static final int ERROR_PAIR_SP_FAILED              =  0x00000056; // pairing of sp with device failed at Rivetz.net
     public static final int ERROR_ADAPTER_NOT_INIT      =  0x00000061; // The rivet adapter is not initialized
     public static final int ERROR_UNKNOWN_TYPE          =  0x00000062;   // Unknown extra or unknown extra data type
     public static final int ERROR_NOT_INSTALLED         =  0x00000063; // The Rivetz app is not installed
@@ -165,8 +171,14 @@ public abstract class RivetBase {
         map.put(ERROR_MISSING_PARAMETER,"A required parameter is missing");
         map.put(ERROR_KEYNAME_EXISTS,"KEYNAME already exists when adding or creating a key");
         map.put(ERROR_KEYNAME_NOTFOUND,"KEYNAME not found");
+        map.put(ERROR_DEVICEID_NOTFOUND,"Service Provider record doesn't have a device ID assigned");
         map.put(ERROR_LOADING_TA,"Error loading the TA binary");
         map.put(ERROR_OPEN_TA,"Error opening TA binary");
+        map.put(ERROR_SPID_ALREADY_PAIRED,"Service provider is already paired");
+        map.put(ERROR_NETWORK_UNAVAILABLE,"There seems to be a problem connecting with the network.");
+        map.put(ERROR_REGISTER_SP_FAILED,"Unable to register the service provider with this device");
+        map.put(ERROR_REGISTER_DEV_FAILED,"Registration of device with Rivetz.net has failed");
+        map.put(ERROR_PAIR_SP_FAILED,"Unable to pair the device with the service provider");
         map.put(ERROR_VERSION_ERROR,"Calling TA Version function failed to return result");
         map.put(ERROR_CORRUPT_SP_RCRD,"The serivice provider record signature could not be verified");
         map.put(ERROR_UNKNOWN_TYPE, "Unknown extra or unknown extra data type");
